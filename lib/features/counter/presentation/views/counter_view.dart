@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../viewmodels/counter_viewmodel.dart';
 
@@ -26,6 +27,13 @@ class _CounterViewState extends State<CounterView> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud),
+            tooltip: 'Weather',
+            onPressed: () => context.go('/weather'),
+          ),
+        ],
       ),
       body: Center(
         child: Column(
