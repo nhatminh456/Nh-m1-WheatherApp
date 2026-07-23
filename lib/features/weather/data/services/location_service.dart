@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
@@ -21,7 +23,19 @@ class LocationService {
       );
     }
 
-    return Geolocator.getCurrentPosition();
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+    } on TimeoutException {
+      throw const LocationServiceException(
+        'Timed out waiting for a GPS fix. Check that location is enabled '
+        '(on an emulator, set a location in Extended Controls).',
+      );
+    }
   }
 }
 
