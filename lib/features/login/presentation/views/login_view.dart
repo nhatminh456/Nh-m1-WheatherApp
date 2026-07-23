@@ -50,8 +50,8 @@ class _LoginViewState extends State<LoginView> {
                     decoration: const InputDecoration(labelText: 'Email'),
                     validator: (value) =>
                         (value == null || !value.contains('@'))
-                            ? 'Enter a valid email'
-                            : null,
+                        ? 'Enter a valid email'
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -68,7 +68,9 @@ class _LoginViewState extends State<LoginView> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Text(
                         widget.viewModel.errorMessage ?? 'Login failed',
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                     ),
                   if (widget.viewModel.status == LoginStatus.submitting)

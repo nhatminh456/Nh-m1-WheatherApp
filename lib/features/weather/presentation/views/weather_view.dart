@@ -32,7 +32,8 @@ class _WeatherViewState extends State<WeatherView> {
         title: const Text('Weather'),
       ),
       body: RefreshIndicator(
-        onRefresh: () => widget.viewModel.loadCurrentWeather(forceRefresh: true),
+        onRefresh: () =>
+            widget.viewModel.loadCurrentWeather(forceRefresh: true),
         child: ListenableBuilder(
           listenable: widget.viewModel,
           builder: (context, _) {
@@ -63,7 +64,11 @@ class _WeatherViewState extends State<WeatherView> {
                             weather.cityName,
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
-                          Image.network(weather.iconUrl, width: 100, height: 100),
+                          Image.network(
+                            weather.iconUrl,
+                            width: 100,
+                            height: 100,
+                          ),
                           Text(
                             '${weather.temperatureCelsius.toStringAsFixed(1)}°C',
                             style: Theme.of(context).textTheme.displaySmall,
@@ -136,9 +141,12 @@ class _InfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              )),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );

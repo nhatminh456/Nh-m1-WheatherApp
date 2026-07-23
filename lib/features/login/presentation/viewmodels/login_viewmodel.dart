@@ -32,7 +32,10 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> register({required String email, required String password}) async {
+  Future<void> register({
+    required String email,
+    required String password,
+  }) async {
     _status = LoginStatus.submitting;
     notifyListeners();
 

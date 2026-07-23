@@ -33,7 +33,9 @@ class _CounterViewState extends State<CounterView> {
             listenable: _viewModel,
             builder: (context, _) => IconButton(
               icon: Icon(
-                _viewModel.isLoggedIn ? Icons.verified_user : Icons.person_outline,
+                _viewModel.isLoggedIn
+                    ? Icons.verified_user
+                    : Icons.person_outline,
                 color: _viewModel.isLoggedIn ? Colors.green : null,
               ),
               tooltip: _viewModel.isLoggedIn

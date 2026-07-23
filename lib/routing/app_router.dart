@@ -32,10 +32,7 @@ final GoRouter appRouter = GoRouter(
           apiKey: dotenv.env['OPENWEATHER_API_KEY'] ?? '',
         );
         final repository = WeatherRepository(apiService);
-        final useCase = GetCurrentWeatherUseCase(
-          LocationService(),
-          repository,
-        );
+        final useCase = GetCurrentWeatherUseCase(LocationService(), repository);
         return WeatherView(viewModel: WeatherViewModel(useCase));
       },
     ),

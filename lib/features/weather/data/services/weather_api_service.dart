@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class WeatherApiService {
   WeatherApiService({required this.apiKey, http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   static const _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
 
@@ -15,12 +15,14 @@ class WeatherApiService {
     required double latitude,
     required double longitude,
   }) async {
-    final uri = Uri.parse(_baseUrl).replace(queryParameters: {
-      'lat': latitude.toString(),
-      'lon': longitude.toString(),
-      'appid': apiKey,
-      'units': 'metric',
-    });
+    final uri = Uri.parse(_baseUrl).replace(
+      queryParameters: {
+        'lat': latitude.toString(),
+        'lon': longitude.toString(),
+        'appid': apiKey,
+        'units': 'metric',
+      },
+    );
 
     final response = await _client.get(uri);
     if (response.statusCode != 200) {
