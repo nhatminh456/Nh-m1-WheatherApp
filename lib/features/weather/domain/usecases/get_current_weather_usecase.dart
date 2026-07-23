@@ -8,11 +8,12 @@ class GetCurrentWeatherUseCase {
   final LocationService _locationService;
   final WeatherRepository _weatherRepository;
 
-  Future<Weather> call() async {
+  Future<Weather> call({bool forceRefresh = false}) async {
     final position = await _locationService.getCurrentPosition();
     return _weatherRepository.getCurrentWeather(
       latitude: position.latitude,
       longitude: position.longitude,
+      forceRefresh: forceRefresh,
     );
   }
 }

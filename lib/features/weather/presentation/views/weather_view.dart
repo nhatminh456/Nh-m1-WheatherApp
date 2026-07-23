@@ -24,7 +24,7 @@ class _WeatherViewState extends State<WeatherView> {
     return Scaffold(
       appBar: AppBar(title: const Text('Weather')),
       body: RefreshIndicator(
-        onRefresh: widget.viewModel.loadCurrentWeather,
+        onRefresh: () => widget.viewModel.loadCurrentWeather(forceRefresh: true),
         child: ListenableBuilder(
           listenable: widget.viewModel,
           builder: (context, _) {
