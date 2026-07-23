@@ -4,11 +4,24 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'firebase_options.dart';
 import 'routing/app_router.dart';
+import 'shared/services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  await notificationService.requestPermission();
+  await notificationService.scheduleDaily(
+    id: 0,
+    title: 'Weather update',
+    body: "Check today's weather before you head out.",
+    hour: 7,
+    minute: 0,
+  );
+
   runApp(const MyApp());
 }
 

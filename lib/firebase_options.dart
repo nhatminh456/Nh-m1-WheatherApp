@@ -33,10 +33,7 @@ class DefaultFirebaseOptions {
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -64,5 +61,15 @@ class DefaultFirebaseOptions {
     authDomain: 'weatherapp-flutter-27383-ea393.firebaseapp.com',
     storageBucket: 'weatherapp-flutter-27383-ea393.firebasestorage.app',
     measurementId: 'G-PFL59N7XH7',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDVQzL510wkom-oI-Oa6al_KXs1UNgIt6w',
+    appId: '1:564068783177:web:ce691bea35afb999d49b98',
+    messagingSenderId: '564068783177',
+    projectId: 'weatherapp-flutter-27383-ea393',
+    authDomain: 'weatherapp-flutter-27383-ea393.firebaseapp.com',
+    storageBucket: 'weatherapp-flutter-27383-ea393.firebasestorage.app',
+    measurementId: 'G-BBLWYBRVRR',
   );
 }
