@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/repositories/auth_repository.dart';
 import '../viewmodels/counter_viewmodel.dart';
 
 class CounterView extends StatefulWidget {
@@ -13,7 +14,7 @@ class CounterView extends StatefulWidget {
 }
 
 class _CounterViewState extends State<CounterView> {
-  final CounterViewModel _viewModel = CounterViewModel();
+  final CounterViewModel _viewModel = CounterViewModel(AuthRepository());
 
   @override
   void dispose() {
@@ -28,6 +29,19 @@ class _CounterViewState extends State<CounterView> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
+          ListenableBuilder(
+            listenable: _viewModel,
+            builder: (context, _) => IconButton(
+              icon: Icon(
+                _viewModel.isLoggedIn ? Icons.verified_user : Icons.person_outline,
+                color: _viewModel.isLoggedIn ? Colors.green : null,
+              ),
+              tooltip: _viewModel.isLoggedIn
+                  ? 'Logged in as ${_viewModel.loggedInEmail}'
+                  : 'Not logged in',
+              onPressed: () => context.go('/login'),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.cloud),
             tooltip: 'Weather',

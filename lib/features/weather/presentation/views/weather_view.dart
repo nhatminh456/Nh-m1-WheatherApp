@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../viewmodels/weather_viewmodel.dart';
@@ -22,7 +23,14 @@ class _WeatherViewState extends State<WeatherView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Weather')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          onPressed: () => context.go('/'),
+        ),
+        title: const Text('Weather'),
+      ),
       body: RefreshIndicator(
         onRefresh: () => widget.viewModel.loadCurrentWeather(forceRefresh: true),
         child: ListenableBuilder(
