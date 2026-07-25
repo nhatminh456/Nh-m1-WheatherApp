@@ -1,0 +1,582 @@
+<!doctype html>
+
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Atmosphere - Weather Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed": "#001e2d",
+              "outline-variant": "#bdc8d1",
+              "on-secondary-fixed-variant": "#3c475d",
+              "on-error-container": "#93000a",
+              "on-tertiary": "#ffffff",
+              "inverse-surface": "#2c3135",
+              "on-tertiary-fixed": "#2d1600",
+              "inverse-primary": "#82cfff",
+              "surface-container": "#eaeef4",
+              error: "#ba1a1a",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#5a647c",
+              background: "#f5faff",
+              "secondary-fixed": "#d7e2ff",
+              primary: "#00658d",
+              "tertiary-fixed": "#ffdcc0",
+              tertiary: "#8d4f00",
+              "surface-container-high": "#e4e9ee",
+              "secondary-container": "#d7e2ff",
+              "on-secondary-fixed": "#101b30",
+              "on-tertiary-fixed-variant": "#6b3b00",
+              "tertiary-fixed-dim": "#ffb876",
+              "primary-container": "#00aeef",
+              "surface-tint": "#00658d",
+              "error-container": "#ffdad6",
+              "on-primary": "#ffffff",
+              "tertiary-container": "#ea8c21",
+              "inverse-on-surface": "#ecf1f7",
+              "on-surface": "#171c20",
+              surface: "#f5faff",
+              "secondary-fixed-dim": "#bbc6e2",
+              "surface-dim": "#d6dae0",
+              "on-primary-fixed-variant": "#004c6b",
+              "primary-fixed": "#c6e7ff",
+              "surface-variant": "#dee3e8",
+              "on-error": "#ffffff",
+              "on-surface-variant": "#3e4850",
+              "on-primary-container": "#003e58",
+              "on-background": "#171c20",
+              "surface-container-low": "#eff4fa",
+              "surface-bright": "#f5faff",
+              outline: "#6e7881",
+              "on-tertiary-container": "#572f00",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-highest": "#dee3e8",
+              "primary-fixed-dim": "#82cfff",
+              secondary: "#545e76",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "element-gap": "16px",
+              "container-padding": "20px",
+              "section-margin": "32px",
+              "card-inner-padding": "24px",
+            },
+            fontFamily: {
+              "body-md": ["Inter"],
+              h1: ["Inter"],
+              "body-lg": ["Inter"],
+              "label-sm": ["Inter"],
+              "h1-mobile": ["Inter"],
+              "display-temp-mobile": ["Inter"],
+              "display-temp": ["Inter"],
+            },
+            fontSize: {
+              "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+              h1: ["32px", { lineHeight: "40px", fontWeight: "600" }],
+              "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+              "label-sm": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  letterSpacing: "0.05em",
+                  fontWeight: "500",
+                },
+              ],
+              "h1-mobile": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+              "display-temp-mobile": [
+                "64px",
+                { lineHeight: "72px", fontWeight: "300" },
+              ],
+              "display-temp": [
+                "80px",
+                {
+                  lineHeight: "90px",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "300",
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(255, 255, 255, 0.6);
+        border-left: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Subtle cloud animation background */
+      @keyframes floatCloud {
+        0% {
+          transform: translateX(-10%) translateY(0);
+          opacity: 0.3;
+        }
+        50% {
+          transform: translateX(50%) translateY(-20px);
+          opacity: 0.5;
+        }
+        100% {
+          transform: translateX(110%) translateY(0);
+          opacity: 0.3;
+        }
+      }
+      .bg-animated-cloud {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 200%;
+        height: 100vh;
+        background-image:
+          radial-gradient(
+            circle at 30% 20%,
+            rgba(255, 255, 255, 0.8) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 70% 60%,
+            rgba(255, 255, 255, 0.6) 0%,
+            transparent 50%
+          );
+        animation: floatCloud 40s linear infinite;
+        z-index: -1;
+        pointer-events: none;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-surface text-on-surface min-h-screen relative overflow-x-hidden font-body-md text-body-md"
+  >
+    <!-- Atmospheric Background -->
+    <div
+      class="fixed inset-0 bg-gradient-to-b from-primary-fixed to-surface z-[-2]"
+    ></div>
+    <div class="bg-animated-cloud"></div>
+    <!-- TopAppBar -->
+    <header
+      class="fixed top-0 w-full z-50 flex justify-between items-center px-container-padding h-16 bg-surface/80 dark:bg-on-primary-fixed/80 backdrop-blur-xl border-b border-white/10 dark:border-white/5 shadow-sm text-primary dark:text-primary-fixed font-h1-mobile text-h1-mobile full-width top-0"
+    >
+      <button
+        class="hover:bg-surface-container-highest/50 transition-colors p-2 rounded-full active:scale-95 duration-200"
+      >
+        <span
+          class="material-symbols-outlined"
+          style="font-variation-settings: &quot;FILL&quot; 1"
+          >menu</span
+        >
+      </button>
+      <span
+        class="font-h1-mobile text-h1-mobile font-bold tracking-tight text-primary dark:text-primary-container"
+        >Atmosphere</span
+      >
+      <button
+        class="hover:bg-surface-container-highest/50 transition-colors p-2 rounded-full active:scale-95 duration-200 text-on-surface-variant dark:text-outline-variant"
+      >
+        <span
+          class="material-symbols-outlined"
+          style="font-variation-settings: &quot;FILL&quot; 1"
+          >search</span
+        >
+      </button>
+    </header>
+    <!-- Main Content Area -->
+    <main class="pt-24 pb-32 px-container-padding md:max-w-2xl md:mx-auto">
+      <!-- Hero Section: Current Weather -->
+      <section
+        class="flex flex-col items-center justify-center mb-section-margin text-center"
+      >
+        <h1
+          class="font-h1-mobile text-h1-mobile text-on-surface font-semibold mb-2"
+        >
+          Hà Nội
+        </h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mb-6">
+          Có mây
+        </p>
+        <div class="flex items-center justify-center relative w-48 h-48 mb-4">
+          <!-- Weather Icon Visual -->
+          <div
+            class="absolute inset-0 bg-primary-fixed rounded-full blur-2xl opacity-40"
+          ></div>
+          <span
+            class="material-symbols-outlined text-8xl text-primary z-10"
+            style="
+              font-variation-settings: &quot;FILL&quot; 1;
+              font-size: 120px;
+            "
+            >qr_code_2</span
+          >
+        </div>
+        <div
+          class="font-display-temp-mobile text-display-temp-mobile text-on-surface mb-2"
+        >
+          28°
+        </div>
+        <div
+          class="flex gap-4 font-body-md text-body-md text-on-surface-variant"
+        >
+          <span>C 32°</span>
+          <span>T 24°</span>
+        </div>
+      </section>
+      <!-- Bento Grid: Details -->
+      <section
+        class="grid grid-cols-2 md:grid-cols-3 gap-element-gap mb-section-margin"
+      >
+        <!-- Humidity -->
+        <div
+          class="glass-panel rounded-xl p-4 flex flex-col justify-between h-32 hover:bg-surface-container-highest/20 transition-colors"
+        >
+          <div class="flex items-center gap-2 text-on-surface-variant mb-2">
+            <span
+              class="material-symbols-outlined text-sm"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >humidity_percentage</span
+            >
+            <span class="font-label-sm text-label-sm uppercase">Độ ẩm</span>
+          </div>
+          <div
+            class="font-h1-mobile text-h1-mobile text-on-surface font-semibold"
+          >
+            78%
+          </div>
+          <div class="font-label-sm text-label-sm text-on-surface-variant mt-1">
+            Hơi oi bức
+          </div>
+        </div>
+        <!-- Wind -->
+        <div
+          class="glass-panel rounded-xl p-4 flex flex-col justify-between h-32 hover:bg-surface-container-highest/20 transition-colors"
+        >
+          <div class="flex items-center gap-2 text-on-surface-variant mb-2">
+            <span
+              class="material-symbols-outlined text-sm"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >air</span
+            >
+            <span class="font-label-sm text-label-sm uppercase">Gió</span>
+          </div>
+          <div
+            class="font-h1-mobile text-h1-mobile text-on-surface font-semibold"
+          >
+            12 km/h
+          </div>
+          <div class="font-label-sm text-label-sm text-on-surface-variant mt-1">
+            Đông Nam
+          </div>
+        </div>
+        <!-- UV Index -->
+        <div
+          class="glass-panel rounded-xl p-4 flex flex-col justify-between h-32 hover:bg-surface-container-highest/20 transition-colors col-span-2 md:col-span-1"
+        >
+          <div class="flex items-center gap-2 text-on-surface-variant mb-2">
+            <span
+              class="material-symbols-outlined text-sm"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >light_mode</span
+            >
+            <span class="font-label-sm text-label-sm uppercase">UV</span>
+          </div>
+          <div
+            class="font-h1-mobile text-h1-mobile text-on-surface font-semibold"
+          >
+            4
+          </div>
+          <div
+            class="w-full bg-surface-variant h-1.5 rounded-full mt-2 overflow-hidden"
+          >
+            <div
+              class="bg-tertiary-container h-full rounded-full"
+              style="width: 40%"
+            ></div>
+          </div>
+          <div class="font-label-sm text-label-sm text-on-surface-variant mt-1">
+            Trung bình
+          </div>
+        </div>
+      </section>
+      <!-- 24h Forecast (Horizontal Scroll) -->
+      <section
+        class="glass-panel rounded-xl p-card-inner-padding mb-section-margin"
+      >
+        <h2
+          class="font-body-lg text-body-lg font-semibold text-on-surface mb-4"
+        >
+          Dự báo hôm nay
+        </h2>
+        <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4">
+          <!-- Item 1 -->
+          <div class="flex flex-col items-center min-w-[60px]">
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant mb-2"
+              >Bây giờ</span
+            >
+            <span
+              class="material-symbols-outlined text-primary text-2xl mb-2"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >qr_code_2</span
+            >
+            <span class="font-body-md text-body-md font-medium">28°</span>
+          </div>
+          <!-- Item 2 -->
+          <div class="flex flex-col items-center min-w-[60px]">
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant mb-2"
+              >14:00</span
+            >
+            <span
+              class="material-symbols-outlined text-primary text-2xl mb-2"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >sunny</span
+            >
+            <span class="font-body-md text-body-md font-medium">30°</span>
+          </div>
+          <!-- Item 3 -->
+          <div class="flex flex-col items-center min-w-[60px]">
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant mb-2"
+              >15:00</span
+            >
+            <span
+              class="material-symbols-outlined text-primary text-2xl mb-2"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >sunny</span
+            >
+            <span class="font-body-md text-body-md font-medium">31°</span>
+          </div>
+          <!-- Item 4 -->
+          <div class="flex flex-col items-center min-w-[60px]">
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant mb-2"
+              >16:00</span
+            >
+            <span
+              class="material-symbols-outlined text-primary text-2xl mb-2"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >qr_code_2</span
+            >
+            <span class="font-body-md text-body-md font-medium">30°</span>
+          </div>
+          <!-- Item 5 -->
+          <div class="flex flex-col items-center min-w-[60px]">
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant mb-2"
+              >17:00</span
+            >
+            <span
+              class="material-symbols-outlined text-outline text-2xl mb-2"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >cloud</span
+            >
+            <span class="font-body-md text-body-md font-medium">29°</span>
+          </div>
+          <!-- Item 6 -->
+          <div class="flex flex-col items-center min-w-[60px]">
+            <span
+              class="font-label-sm text-label-sm text-on-surface-variant mb-2"
+              >18:00</span
+            >
+            <span
+              class="material-symbols-outlined text-outline text-2xl mb-2"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >cloud</span
+            >
+            <span class="font-body-md text-body-md font-medium">27°</span>
+          </div>
+        </div>
+      </section>
+      <!-- 7-Day Forecast List -->
+      <section class="glass-panel rounded-xl p-card-inner-padding">
+        <h2
+          class="font-body-lg text-body-lg font-semibold text-on-surface mb-4"
+        >
+          7 ngày tới
+        </h2>
+        <div class="flex flex-col gap-4">
+          <!-- Day 1 -->
+          <div
+            class="flex items-center justify-between py-2 border-b border-surface-variant/50 last:border-0"
+          >
+            <span class="w-16 font-body-md text-body-md text-on-surface-variant"
+              >H.Nay</span
+            >
+            <span
+              class="material-symbols-outlined text-primary"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >qr_code_2</span
+            >
+            <div class="flex items-center gap-3 w-32 justify-end">
+              <span class="font-body-md text-body-md text-on-surface-variant"
+                >24°</span
+              >
+              <div
+                class="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden flex"
+              >
+                <div class="bg-primary/30 h-full w-1/4"></div>
+                <div class="bg-primary h-full w-2/4 rounded-full"></div>
+              </div>
+              <span class="font-body-md text-body-md font-medium">32°</span>
+            </div>
+          </div>
+          <!-- Day 2 -->
+          <div
+            class="flex items-center justify-between py-2 border-b border-surface-variant/50 last:border-0"
+          >
+            <span class="w-16 font-body-md text-body-md text-on-surface-variant"
+              >Th 3</span
+            >
+            <span
+              class="material-symbols-outlined text-outline"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >cloud</span
+            >
+            <div class="flex items-center gap-3 w-32 justify-end">
+              <span class="font-body-md text-body-md text-on-surface-variant"
+                >25°</span
+              >
+              <div
+                class="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden flex"
+              >
+                <div class="bg-primary/30 h-full w-1/4"></div>
+                <div class="bg-primary h-full w-1/3 rounded-full"></div>
+              </div>
+              <span class="font-body-md text-body-md font-medium">30°</span>
+            </div>
+          </div>
+          <!-- Day 3 -->
+          <div
+            class="flex items-center justify-between py-2 border-b border-surface-variant/50 last:border-0"
+          >
+            <span class="w-16 font-body-md text-body-md text-on-surface-variant"
+              >Th 4</span
+            >
+            <span
+              class="material-symbols-outlined text-tertiary-container"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >rainy</span
+            >
+            <div class="flex items-center gap-3 w-32 justify-end">
+              <span class="font-body-md text-body-md text-on-surface-variant"
+                >24°</span
+              >
+              <div
+                class="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden flex"
+              >
+                <div class="bg-primary/30 h-full w-1/5"></div>
+                <div class="bg-primary h-full w-1/2 rounded-full"></div>
+              </div>
+              <span class="font-body-md text-body-md font-medium">29°</span>
+            </div>
+          </div>
+          <!-- Day 4 -->
+          <div
+            class="flex items-center justify-between py-2 border-b border-surface-variant/50 last:border-0"
+          >
+            <span class="w-16 font-body-md text-body-md text-on-surface-variant"
+              >Th 5</span
+            >
+            <span
+              class="material-symbols-outlined text-primary"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >qr_code_2</span
+            >
+            <div class="flex items-center gap-3 w-32 justify-end">
+              <span class="font-body-md text-body-md text-on-surface-variant"
+                >26°</span
+              >
+              <div
+                class="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden flex"
+              >
+                <div class="bg-primary/30 h-full w-1/3"></div>
+                <div class="bg-primary h-full w-2/3 rounded-full"></div>
+              </div>
+              <span class="font-body-md text-body-md font-medium">33°</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- BottomNavBar (Mobile Shell) -->
+    <nav
+      class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/80 dark:bg-on-primary-fixed/80 backdrop-blur-xl border-t border-white/10 dark:border-white/5 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl full-width bottom-0 font-label-sm text-label-sm"
+    >
+      <button
+        class="flex flex-col items-center justify-center text-primary dark:text-primary-container font-bold bg-primary-container/20 rounded-xl px-3 py-1 hover:text-primary dark:hover:text-primary-fixed"
+      >
+        <span
+          class="material-symbols-outlined mb-1"
+          style="font-variation-settings: &quot;FILL&quot; 1"
+          >qr_code_2</span
+        >
+        <span>Dự báo</span>
+      </button>
+      <button
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed"
+      >
+        <span class="material-symbols-outlined mb-1">location_on</span>
+        <span>Vị trí</span>
+      </button>
+      <button
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed"
+      >
+        <span class="material-symbols-outlined mb-1">notifications_active</span>
+        <span>Cảnh báo</span>
+      </button>
+      <button
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed"
+      >
+        <span class="material-symbols-outlined mb-1">history</span>
+        <span>Lịch sử</span>
+      </button>
+      <button
+        class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed"
+      >
+        <span class="material-symbols-outlined mb-1">settings</span>
+        <span>Cài đặt</span>
+      </button>
+    </nav>
+  </body>
+</html>

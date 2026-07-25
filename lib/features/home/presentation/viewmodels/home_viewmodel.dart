@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../shared/repositories/auth_repository.dart';
 
-class CounterViewModel extends ChangeNotifier {
-  CounterViewModel(this._authRepository) {
+class HomeViewModel extends ChangeNotifier {
+  HomeViewModel(this._authRepository) {
     try {
       _authSubscription = _authRepository.authStateChanges.listen((user) {
         _loggedInEmail = user?.email;

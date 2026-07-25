@@ -1,7 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
-import '../features/counter/presentation/views/counter_view.dart';
+import '../features/home/presentation/views/home_view.dart';
 import '../features/login/presentation/viewmodels/login_viewmodel.dart';
 import '../features/login/presentation/views/login_view.dart';
 import '../features/weather/data/repositories/weather_repository.dart';
@@ -17,8 +17,7 @@ final GoRouter appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) =>
-          const CounterView(title: 'Flutter Demo Home Page'),
+      builder: (context, state) => const HomeView(title: 'Flutter Demo Home Page'),
     ),
     GoRoute(
       path: '/login',
