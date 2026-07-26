@@ -23,6 +23,15 @@ class LocationService {
       );
     }
 
+    // A cached OS position is city-accurate enough for weather and avoids
+    // waiting up to 15s for a fresh GPS fix on every app launch.
+    try {
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) return lastKnown;
+    } on UnsupportedError {
+      // Web has no cached positions; fall through to a live fix.
+    }
+
     try {
       return await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(

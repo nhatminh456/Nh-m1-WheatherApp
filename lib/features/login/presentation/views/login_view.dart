@@ -51,7 +51,7 @@ class _LoginViewState extends State<LoginView> {
             builder: (context, _) {
               if (widget.viewModel.status == LoginStatus.success) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (context.mounted) context.go('/weather');
+                  if (context.mounted) context.go('/');
                 });
               }
 
@@ -453,7 +453,7 @@ class _Logo extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: SvgPicture.string(
-        reiconSvg(Reicon.filled.cloud),
+        reiconSvg(Reicon.filled.cloudSun),
         width: 44,
         height: 44,
         colorFilter: ColorFilter.mode(colorScheme.primary, BlendMode.srcIn),

@@ -6,7 +6,10 @@ class WeatherApiService {
   WeatherApiService({required this.apiKey, http.Client? client})
     : _client = client ?? http.Client();
 
-  static const _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
+  static const _currentWeatherUrl =
+      'https://api.openweathermap.org/data/2.5/weather';
+  static const _forecastUrl =
+      'https://api.openweathermap.org/data/2.5/forecast';
 
   final String apiKey;
   final http.Client _client;
@@ -14,13 +17,25 @@ class WeatherApiService {
   Future<Map<String, dynamic>> fetchCurrentWeather({
     required double latitude,
     required double longitude,
-  }) async {
-    final uri = Uri.parse(_baseUrl).replace(
+  }) => _get(_currentWeatherUrl, latitude, longitude);
+
+  Future<Map<String, dynamic>> fetchForecast({
+    required double latitude,
+    required double longitude,
+  }) => _get(_forecastUrl, latitude, longitude);
+
+  Future<Map<String, dynamic>> _get(
+    String url,
+    double latitude,
+    double longitude,
+  ) async {
+    final uri = Uri.parse(url).replace(
       queryParameters: {
         'lat': latitude.toString(),
         'lon': longitude.toString(),
         'appid': apiKey,
         'units': 'metric',
+        'lang': 'vi',
       },
     );
 
