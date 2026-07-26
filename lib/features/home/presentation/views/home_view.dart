@@ -200,16 +200,16 @@ class _HeroSection extends StatelessWidget {
         Container(
           width: 160,
           height: 160,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: _primaryFixed.withValues(alpha: 0.8),
-                blurRadius: 48,
-                spreadRadius: 8,
-              ),
-            ],
-          ),
+          // decoration: BoxDecoration(
+          //   shape: BoxShape.circle,
+          //   boxShadow: [
+          //     BoxShadow(
+          //       color: _primaryFixed.withValues(alpha: 0.8),
+          //       blurRadius: 48,
+          //       spreadRadius: 8,
+          //     ),
+          //   ],
+          // ),
           child: Image.asset(
             Util.findIcon(weather.condition, true),
             fit: BoxFit.contain,
@@ -575,9 +575,7 @@ class _DailyRow extends StatelessWidget {
                   bottom: 0,
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [startColor, endColor],
-                      ),
+                      gradient: LinearGradient(colors: [startColor, endColor]),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
