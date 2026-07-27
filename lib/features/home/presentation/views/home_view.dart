@@ -654,9 +654,11 @@ class _HomeBottomNavigationBar extends StatelessWidget {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: 0,
-      // Chỉ "Dự báo" (màn hình hiện tại) có sẵn; các tab còn lại chưa có
-      // màn hình tương ứng nên tạm khoá (onTap không đổi currentIndex).
-      onTap: (_) {},
+      onTap: (index) {
+        if (index == 2) {
+          context.go('/alerts');
+        }
+      },
       backgroundColor: colorScheme.surface.withValues(alpha: 0.8),
       selectedItemColor: colorScheme.primary,
       unselectedItemColor: disabledColor,

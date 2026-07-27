@@ -16,14 +16,16 @@ Future<void> main() async {
 
   final notificationService = NotificationService();
   await notificationService.initialize();
-  await notificationService.requestPermission();
-  await notificationService.scheduleDaily(
-    id: 0,
-    title: 'Weather update',
-    body: "Check today's weather before you head out.",
-    hour: 7,
-    minute: 0,
-  );
+  final notificationsGranted = await notificationService.requestPermission();
+  if (notificationsGranted) {
+    await notificationService.scheduleDaily(
+      id: 0,
+      title: 'Weather update',
+      body: "Check today's weather before you head out.",
+      hour: 7,
+      minute: 0,
+    );
+  }
 
   runApp(const MyApp());
 }
