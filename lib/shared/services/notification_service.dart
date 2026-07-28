@@ -28,25 +28,41 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      _nextInstanceOf(hour, minute),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'daily_weather_reminder',
-          'Daily weather reminder',
-          channelDescription: 'Reminds you to check today\'s weather',
-          importance: Importance.defaultImportance,
-          priority: Priority.defaultPriority,
-        ),
+    final notificationDetails = const NotificationDetails(
+      android: AndroidNotificationDetails(
+        'daily_weather_reminder',
+        'Daily weather reminder',
+        channelDescription: 'Reminds you to check today\'s weather',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
     );
+
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        _nextInstanceOf(hour, minute),
+        notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+    } catch (_) {
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        _nextInstanceOf(hour, minute),
+        notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+    }
   }
 
   tz.TZDateTime _nextInstanceOf(int hour, int minute) {

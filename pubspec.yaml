@@ -50,6 +50,8 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.4
   sqflite: ^2.4.3
+  sqflite_common: ^2.5.11
+  sqflite_common_ffi_web: ^0.4.5+4
   path: ^1.9.1
 
 dev_dependencies:

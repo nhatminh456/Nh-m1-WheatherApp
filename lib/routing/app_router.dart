@@ -1,6 +1,9 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/alerts/data/repositories/weather_alerts_repository.dart';
+import '../features/alerts/presentation/viewmodels/alerts_viewmodel.dart';
+import '../features/alerts/presentation/views/alerts_view.dart';
 import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../features/home/presentation/views/home_view.dart';
 import '../features/login/presentation/viewmodels/login_viewmodel.dart';
@@ -47,6 +50,14 @@ final GoRouter appRouter = GoRouter(
           _buildWeatherRepository(),
         );
         return WeatherView(viewModel: WeatherViewModel(useCase));
+      },
+    ),
+    GoRoute(
+      path: '/alerts',
+      builder: (context, state) {
+        return AlertsView(
+          viewModel: AlertsViewModel(WeatherAlertsRepository()),
+        );
       },
     ),
   ],
