@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../../shared/repositories/auth_repository.dart';
+import '../../../location/data/models/location_model.dart';
+import '../../../location/data/repositories/location_repository.dart';
 import '../../../weather/data/models/forecast.dart';
 import '../../../weather/data/models/weather.dart';
 import '../../../weather/domain/usecases/get_home_weather_usecase.dart';
@@ -10,7 +12,13 @@ import '../../../weather/domain/usecases/get_home_weather_usecase.dart';
 enum HomeLoadStatus { initial, loading, success, error }
 
 class HomeViewModel extends ChangeNotifier {
-  HomeViewModel(this._authRepository, this._getHomeWeather) {
+  HomeViewModel(
+    AuthRepository authRepository,
+    GetHomeWeatherUseCase getHomeWeather,
+    LocationRepository locationRepository,
+  ) : _authRepository = authRepository,
+      _getHomeWeather = getHomeWeather,
+      _locationRepository = locationRepository {
     try {
       _authSubscription = _authRepository.authStateChanges.listen((user) {
         _loggedInEmail = user?.email;
@@ -25,11 +33,13 @@ class HomeViewModel extends ChangeNotifier {
 
   final AuthRepository _authRepository;
   final GetHomeWeatherUseCase _getHomeWeather;
+  final LocationRepository _locationRepository;
   StreamSubscription<void>? _authSubscription;
 
   HomeLoadStatus _status = HomeLoadStatus.initial;
   Weather? _weather;
   Forecast? _forecast;
+  LocationModel? _defaultLocation;
   String? _errorMessage;
   String? _loggedInEmail;
 
@@ -40,16 +50,24 @@ class HomeViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get loggedInEmail => _loggedInEmail;
   bool get isLoggedIn => _loggedInEmail != null;
+  LocationModel? get defaultLocation => _defaultLocation;
 
-  Future<void> load({bool forceRefresh = false}) async {
+  Future<void> load({
+    LocationModel? location,
+    bool forceRefresh = false,
+  }) async {
     _status = HomeLoadStatus.loading;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final data = await _getHomeWeather(forceRefresh: forceRefresh);
+      final data = await _getHomeWeather(
+        forceRefresh: forceRefresh,
+        locationOverride: location,
+      );
       _weather = data.weather;
       _forecast = data.forecast;
+      _defaultLocation = location ?? await _locationRepository.getDefault();
       _status = HomeLoadStatus.success;
     } catch (error) {
       _errorMessage = error.toString();

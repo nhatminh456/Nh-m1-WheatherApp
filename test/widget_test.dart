@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:weatherapp/main.dart';
-
+// Test xem UI có hiển thị chính xác không
 void main() {
   setUpAll(() async {
     dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test-key');

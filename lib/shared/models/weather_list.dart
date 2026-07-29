@@ -2,22 +2,23 @@ import 'feels_like.dart';
 import 'temp.dart';
 import 'weather.dart';
 import '../utilities/constants.dart';
+// Là model dùng lưu thông tin dự báo weather
 
 class WheatherList {
-  int? dt;
-  int? sunrise;
-  int? sunset;
-  Temp? temp;
-  FeelsLike? feelsLike;
-  int? pressure;
-  int? humidity;
-  List<Weather>? weather;
-  double? speed;
-  int? deg;
-  num? gust;
-  int? clouds;
-  double? pop;
-  num? rain;
+  int? dt; // thời gian dự báo
+  int? sunrise; // mặt trời mọc
+  int? sunset; // mặt trời lặn
+  Temp? temp; // nhiệt độ
+  FeelsLike? feelsLike; // cảm nhận
+  int? pressure; // áp suất
+  int? humidity; // độ ẩm
+  List<Weather>? weather; // thông tin thời tiết
+  double? speed; // tốc độ gió
+  int? deg; // hướng gió
+  num? gust; // gió giật
+  int? clouds; // mây
+  double? pop; // tỉ lệ mưa
+  num? rain; // mưa
 
   WheatherList({
     this.dt,
@@ -84,7 +85,9 @@ class WheatherList {
     data['rain'] = rain;
     return data;
   }
-
+// Nếu không có hai phương thức này thì phải tự ánh xạ từng trường dữ liệu
+// ở nhiều nơi trong chương trình, khiến code dài, 
+//lặp lại và khó bảo trì.
   String getIconUrl() {
     return '${Constants.WEATHER_IMAGES_URL}${weather![0].icon!}.png';
   }

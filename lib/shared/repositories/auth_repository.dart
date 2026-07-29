@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-
+// phụ trách login và register
 class AuthRepository {
   AuthRepository({FirebaseAuth? firebaseAuth})
     : _firebaseAuthOverride = firebaseAuth;

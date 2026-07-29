@@ -6,11 +6,11 @@ import 'package:sqflite/sqflite.dart';
 /// service only owns opening the database and running migrations.
 class DatabaseService {
   DatabaseService._internal();
-
+  // có nghĩa là app này chỉ có 1 db serveice
   static final DatabaseService instance = DatabaseService._internal();
 
   static const _dbName = 'weatherapp.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   Database? _db;
 
@@ -34,9 +34,11 @@ class DatabaseService {
       CREATE TABLE locations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        display_name TEXT NOT NULL DEFAULT '',
         latitude REAL NOT NULL,
         longitude REAL NOT NULL,
-        sort_order INTEGER NOT NULL DEFAULT 0
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        is_default INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -62,6 +64,14 @@ class DatabaseService {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Add ALTER TABLE / new CREATE TABLE migrations here as _dbVersion increases.
+    if (oldVersion < 2) {
+      await db.execute(
+        "ALTER TABLE locations ADD COLUMN display_name TEXT NOT NULL DEFAULT ''",
+      );
+      await db.execute(
+        'ALTER TABLE locations ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0',
+      );
+    }
   }
 
   Future<void> close() async {

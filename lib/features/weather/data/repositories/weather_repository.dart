@@ -10,10 +10,6 @@ class WeatherRepository {
   WeatherRepository(this._apiService);
 
   static const _cacheTtl = Duration(minutes: 15);
-  static const _cachedJsonKey = 'weather_cache_json';
-  static const _cachedAtKey = 'weather_cache_timestamp';
-  static const _cachedForecastJsonKey = 'forecast_cache_json';
-  static const _cachedForecastAtKey = 'forecast_cache_timestamp';
 
   final WeatherApiService _apiService;
 
@@ -23,24 +19,32 @@ class WeatherRepository {
     bool forceRefresh = false,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    final cacheKey = _cacheKey(latitude, longitude, 'weather');
+    final timestampKey = _cacheKey(latitude, longitude, 'weather_timestamp');
 
     if (!forceRefresh) {
-      final cached = _readCache(prefs);
-      if (cached != null) return cached;
+      final cached = _readFreshJson(prefs, cacheKey, timestampKey);
+      if (cached != null) return Weather.fromOpenWeatherJson(cached);
     }
 
     final json = await _apiService.fetchCurrentWeather(
       latitude: latitude,
       longitude: longitude,
     );
-    await prefs.setString(_cachedJsonKey, jsonEncode(json));
-    await prefs.setInt(_cachedAtKey, DateTime.now().millisecondsSinceEpoch);
+    await prefs.setString(cacheKey, jsonEncode(json));
+    await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
     return Weather.fromOpenWeatherJson(json);
   }
 
-  Weather? _readCache(SharedPreferences prefs) {
-    final json = _readFreshJson(prefs, _cachedJsonKey, _cachedAtKey);
-    return json == null ? null : Weather.fromOpenWeatherJson(json);
+  Future<Weather> peekCurrentWeather({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final json = await _apiService.fetchCurrentWeather(
+      latitude: latitude,
+      longitude: longitude,
+    );
+    return Weather.fromOpenWeatherJson(json);
   }
 
   Future<Forecast> getForecast({
@@ -49,13 +53,11 @@ class WeatherRepository {
     bool forceRefresh = false,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    final cacheKey = _cacheKey(latitude, longitude, 'forecast');
+    final timestampKey = _cacheKey(latitude, longitude, 'forecast_timestamp');
 
     if (!forceRefresh) {
-      final cached = _readFreshJson(
-        prefs,
-        _cachedForecastJsonKey,
-        _cachedForecastAtKey,
-      );
+      final cached = _readFreshJson(prefs, cacheKey, timestampKey);
       if (cached != null) return Forecast.fromOpenWeatherJson(cached);
     }
 
@@ -63,12 +65,13 @@ class WeatherRepository {
       latitude: latitude,
       longitude: longitude,
     );
-    await prefs.setString(_cachedForecastJsonKey, jsonEncode(json));
-    await prefs.setInt(
-      _cachedForecastAtKey,
-      DateTime.now().millisecondsSinceEpoch,
-    );
+    await prefs.setString(cacheKey, jsonEncode(json));
+    await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
     return Forecast.fromOpenWeatherJson(json);
+  }
+
+  static String _cacheKey(double latitude, double longitude, String suffix) {
+    return '${latitude.toStringAsFixed(4)}_${longitude.toStringAsFixed(4)}_$suffix';
   }
 
   Map<String, dynamic>? _readFreshJson(

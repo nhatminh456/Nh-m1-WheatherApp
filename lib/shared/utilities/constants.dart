@@ -1,7 +1,8 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+// chứa hằng số của app 
+// đọc API key, lưu Url
 class Constants {
   static String get WEATHER_APP_ID => dotenv.env['OPENWEATHER_API_KEY']!;
   static const String WEATHER_BASE_SCHEME = 'https://';

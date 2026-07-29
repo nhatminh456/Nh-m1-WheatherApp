@@ -1,11 +1,16 @@
 import 'package:intl/intl.dart';
-
+// tiện ích
+// chứa function dùng chung cho việc format date và 
+//tìm icon dựa trên tên thời tiết
 class Util {
-  static String getFormattedDate(DateTime dateTime) {
-    return DateFormat('EEE, MMM d').format(dateTime); //Tue, May 5, 2022
+  static String getFormattedDate(DateTime dateTime) 
+  // Nghĩa là không cần tạo đối tượng vẫn gọi được.
+  {
+    return DateFormat('EEE, MMM d').format(dateTime); //Tue, May 5, 2026
   }
 
   static String findIcon(String name, bool type) {
+    // chọn icon thời tiết 
     if (type) {
       switch (name) {
         case "Clouds":

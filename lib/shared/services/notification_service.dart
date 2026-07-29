@@ -8,7 +8,9 @@ class NotificationService {
   Future<void> initialize() async {
     tz_data.initializeTimeZones();
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const initSettings = InitializationSettings(android: androidSettings);
     await _plugin.initialize(initSettings);
   }
@@ -16,7 +18,8 @@ class NotificationService {
   Future<bool> requestPermission() async {
     final androidPlugin = _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     final granted = await androidPlugin?.requestNotificationsPermission();
     return granted ?? false;
   }
@@ -42,7 +45,7 @@ class NotificationService {
           priority: Priority.defaultPriority,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,

@@ -5,9 +5,18 @@ import 'package:intl/intl.dart';
 import '../viewmodels/weather_viewmodel.dart';
 
 class WeatherView extends StatefulWidget {
-  const WeatherView({super.key, required this.viewModel});
+  const WeatherView({
+    super.key,
+    required this.viewModel,
+    this.cityLabel,
+    this.latitude,
+    this.longitude,
+  });
 
   final WeatherViewModel viewModel;
+  final String? cityLabel;
+  final double? latitude;
+  final double? longitude;
 
   @override
   State<WeatherView> createState() => _WeatherViewState();
@@ -17,7 +26,10 @@ class _WeatherViewState extends State<WeatherView> {
   @override
   void initState() {
     super.initState();
-    widget.viewModel.loadCurrentWeather();
+    widget.viewModel.loadCurrentWeather(
+      latitude: widget.latitude,
+      longitude: widget.longitude,
+    );
   }
 
   @override
@@ -27,13 +39,22 @@ class _WeatherViewState extends State<WeatherView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Back',
-          onPressed: () => context.go('/'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         ),
-        title: const Text('Weather'),
+        title: Text(widget.cityLabel ?? 'Weather'),
       ),
       body: RefreshIndicator(
-        onRefresh: () =>
-            widget.viewModel.loadCurrentWeather(forceRefresh: true),
+        onRefresh: () => widget.viewModel.loadCurrentWeather(
+          forceRefresh: true,
+          latitude: widget.latitude,
+          longitude: widget.longitude,
+        ),
         child: ListenableBuilder(
           listenable: widget.viewModel,
           builder: (context, _) {
