@@ -18,12 +18,20 @@ class WeatherViewModel extends ChangeNotifier {
   Weather? get weather => _weather;
   String? get errorMessage => _errorMessage;
 
-  Future<void> loadCurrentWeather({bool forceRefresh = false}) async {
+  Future<void> loadCurrentWeather({
+    double? latitude,
+    double? longitude,
+    bool forceRefresh = false,
+  }) async {
     _status = WeatherLoadStatus.loading;
     notifyListeners();
 
     try {
-      _weather = await _getCurrentWeatherUseCase(forceRefresh: forceRefresh);
+      _weather = await _getCurrentWeatherUseCase(
+        latitude: latitude,
+        longitude: longitude,
+        forceRefresh: forceRefresh,
+      );
       _status = WeatherLoadStatus.success;
     } catch (e) {
       _errorMessage = e.toString();
