@@ -2,22 +2,87 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../search/data/repositories/search_repository.dart';
+import '../../../search/data/services/search_local_service.dart';
 import '../viewmodels/weather_viewmodel.dart';
 
 class WeatherView extends StatefulWidget {
-  const WeatherView({super.key, required this.viewModel});
+  const WeatherView({
+    super.key,
+    required this.viewModel,
+    this.latitude,
+    this.longitude,
+    this.cityName,
+  });
 
   final WeatherViewModel viewModel;
+  final double? latitude;
+  final double? longitude;
+  final String? cityName;
 
   @override
   State<WeatherView> createState() => _WeatherViewState();
 }
 
 class _WeatherViewState extends State<WeatherView> {
+  final SearchRepository _searchRepository = SearchRepository(SearchLocalService());
+  bool _isFavorite = false;
+
   @override
   void initState() {
     super.initState();
-    widget.viewModel.loadCurrentWeather();
+    widget.viewModel.loadCurrentWeather(
+      latitude: widget.latitude,
+      longitude: widget.longitude,
+    );
+    widget.viewModel.addListener(_onViewModelChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.viewModel.removeListener(_onViewModelChanged);
+    super.dispose();
+  }
+
+  void _onViewModelChanged() {
+    if (widget.viewModel.status == WeatherLoadStatus.success &&
+        widget.viewModel.weather != null) {
+      _checkFavoriteStatus();
+    }
+  }
+
+  Future<void> _checkFavoriteStatus() async {
+    final weather = widget.viewModel.weather;
+    if (weather != null) {
+      final isFav = await _searchRepository.isCityFavorited(
+        weather.latitude,
+        weather.longitude,
+      );
+      if (mounted) {
+        setState(() {
+          _isFavorite = isFav;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    final weather = widget.viewModel.weather;
+    if (weather != null) {
+      if (_isFavorite) {
+        await _searchRepository.removeFavoriteCity(
+          weather.latitude,
+          weather.longitude,
+        );
+      } else {
+        await _searchRepository.addFavoriteCity(
+          weather.cityName,
+          weather.latitude,
+          weather.longitude,
+        );
+      }
+      await _checkFavoriteStatus();
+    }
   }
 
   @override
@@ -29,11 +94,26 @@ class _WeatherViewState extends State<WeatherView> {
           tooltip: 'Back',
           onPressed: () => context.go('/'),
         ),
-        title: const Text('Weather'),
+        title: Text(widget.cityName ?? 'Weather'),
+        actions: [
+          if (widget.viewModel.status == WeatherLoadStatus.success &&
+              widget.viewModel.weather != null)
+            IconButton(
+              icon: Icon(
+                _isFavorite ? Icons.star : Icons.star_border,
+                color: _isFavorite ? Colors.amber : null,
+              ),
+              tooltip: _isFavorite ? 'Bỏ yêu thích' : 'Yêu thích',
+              onPressed: _toggleFavorite,
+            ),
+        ],
       ),
       body: RefreshIndicator(
-        onRefresh: () =>
-            widget.viewModel.loadCurrentWeather(forceRefresh: true),
+        onRefresh: () => widget.viewModel.loadCurrentWeather(
+          latitude: widget.latitude,
+          longitude: widget.longitude,
+          forceRefresh: true,
+        ),
         child: ListenableBuilder(
           listenable: widget.viewModel,
           builder: (context, _) {

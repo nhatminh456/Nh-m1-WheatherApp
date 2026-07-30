@@ -8,6 +8,10 @@ import '../features/home/presentation/viewmodels/home_viewmodel.dart';
 import '../features/home/presentation/views/home_view.dart';
 import '../features/login/presentation/viewmodels/login_viewmodel.dart';
 import '../features/login/presentation/views/login_view.dart';
+import '../features/search/data/repositories/search_repository.dart';
+import '../features/search/data/services/search_local_service.dart';
+import '../features/search/presentation/viewmodels/search_viewmodel.dart';
+import '../features/search/presentation/views/search_view.dart';
 import '../features/weather/data/repositories/weather_repository.dart';
 import '../features/weather/data/services/location_service.dart';
 import '../features/weather/data/services/weather_api_service.dart';
@@ -45,11 +49,33 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/weather',
       builder: (context, state) {
+        final latStr = state.uri.queryParameters['lat'];
+        final lonStr = state.uri.queryParameters['lon'];
+        final name = state.uri.queryParameters['name'];
+
+        final double? lat = latStr != null ? double.tryParse(latStr) : null;
+        final double? lon = lonStr != null ? double.tryParse(lonStr) : null;
+
         final useCase = GetCurrentWeatherUseCase(
           LocationService(),
           _buildWeatherRepository(),
         );
-        return WeatherView(viewModel: WeatherViewModel(useCase));
+        return WeatherView(
+          viewModel: WeatherViewModel(useCase),
+          latitude: lat,
+          longitude: lon,
+          cityName: name,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/search',
+      builder: (context, state) {
+        final searchRepo = SearchRepository(SearchLocalService());
+        final weatherRepo = _buildWeatherRepository();
+        return SearchView(
+          viewModel: SearchViewModel(searchRepo, weatherRepo),
+        );
       },
     ),
     GoRoute(

@@ -96,8 +96,8 @@ class _HomeViewState extends State<HomeView> {
                 icon: Reicon.outline.search,
                 color: _onSurfaceVariant,
               ),
-              tooltip: 'Chi tiết thời tiết',
-              onPressed: () => context.go('/weather'),
+              tooltip: 'Tìm kiếm địa điểm',
+              onPressed: () => context.go('/search'),
             ),
           ],
         ),
@@ -657,6 +657,8 @@ class _HomeBottomNavigationBar extends StatelessWidget {
       onTap: (index) {
         if (index == 2) {
           context.go('/alerts');
+        } else if (index == 3) {
+          context.go('/search');
         }
       },
       backgroundColor: colorScheme.surface.withValues(alpha: 0.8),
