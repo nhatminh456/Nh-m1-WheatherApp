@@ -80,6 +80,23 @@ class DatabaseService {
       await db.execute(
         "ALTER TABLE weather_alerts ADD COLUMN city_name TEXT NOT NULL DEFAULT ''",
       );
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS locations (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          latitude REAL NOT NULL,
+          longitude REAL NOT NULL,
+          sort_order INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS search_history (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          query TEXT NOT NULL,
+          is_favorite INTEGER NOT NULL DEFAULT 0,
+          searched_at INTEGER NOT NULL
+        )
+      ''');
     }
   }
 

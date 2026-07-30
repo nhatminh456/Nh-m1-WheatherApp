@@ -24,6 +24,25 @@ class WeatherApiService {
     required double longitude,
   }) => _get(_forecastUrl, latitude, longitude);
 
+  Future<List<Map<String, dynamic>>> fetchLocationFromAddress(String query) async {
+    final uri = Uri.parse('https://api.openweathermap.org/geo/1.0/direct').replace(
+      queryParameters: {
+        'q': query,
+        'limit': '5',
+        'appid': apiKey,
+      },
+    );
+
+    final response = await _client.get(uri);
+    if (response.statusCode != 200) {
+      throw WeatherApiException(
+        'Geocoding request failed with status ${response.statusCode}',
+      );
+    }
+    final List<dynamic> list = jsonDecode(response.body) as List<dynamic>;
+    return list.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+  }
+
   Future<Map<String, dynamic>> _get(
     String url,
     double latitude,

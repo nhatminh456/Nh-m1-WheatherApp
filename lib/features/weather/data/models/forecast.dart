@@ -93,14 +93,20 @@ class _ForecastEntry {
   });
 
   factory _ForecastEntry.fromJson(Map<String, dynamic> json) {
-    final main = json['main'] as Map<String, dynamic>;
-    final weather = (json['weather'] as List).first as Map<String, dynamic>;
+    final main = json['main'] as Map<String, dynamic>? ?? const {};
+    final weatherList = json['weather'] as List?;
+    final weather = (weatherList != null && weatherList.isNotEmpty)
+        ? weatherList.first as Map<String, dynamic>
+        : const <String, dynamic>{};
+
     return _ForecastEntry(
-      time: DateTime.fromMillisecondsSinceEpoch((json['dt'] as num).toInt() * 1000),
-      temperature: (main['temp'] as num).toDouble(),
-      minTemperature: (main['temp_min'] as num).toDouble(),
-      maxTemperature: (main['temp_max'] as num).toDouble(),
-      condition: weather['main'] as String,
+      time: DateTime.fromMillisecondsSinceEpoch(
+        ((json['dt'] as num?)?.toInt() ?? 0) * 1000,
+      ),
+      temperature: (main['temp'] as num?)?.toDouble() ?? 0.0,
+      minTemperature: (main['temp_min'] as num?)?.toDouble() ?? 0.0,
+      maxTemperature: (main['temp_max'] as num?)?.toDouble() ?? 0.0,
+      condition: weather['main'] as String? ?? 'Clouds',
     );
   }
 

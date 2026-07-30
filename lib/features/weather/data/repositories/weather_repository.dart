@@ -38,6 +38,10 @@ class WeatherRepository {
     return Weather.fromOpenWeatherJson(json);
   }
 
+  Future<List<Map<String, dynamic>>> searchLocation(String query) {
+    return _apiService.fetchLocationFromAddress(query);
+  }
+
   Weather? _readCache(SharedPreferences prefs) {
     final json = _readFreshJson(prefs, _cachedJsonKey, _cachedAtKey);
     return json == null ? null : Weather.fromOpenWeatherJson(json);
