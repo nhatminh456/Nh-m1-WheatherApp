@@ -23,9 +23,11 @@ class WeatherRepository {
     bool forceRefresh = false,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    final jsonKey = '${_cachedJsonKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}';
+    final atKey = '${_cachedAtKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}';
 
     if (!forceRefresh) {
-      final cached = _readCache(prefs);
+      final cached = _readCache(prefs, jsonKey, atKey);
       if (cached != null) return cached;
     }
 
@@ -33,8 +35,8 @@ class WeatherRepository {
       latitude: latitude,
       longitude: longitude,
     );
-    await prefs.setString(_cachedJsonKey, jsonEncode(json));
-    await prefs.setInt(_cachedAtKey, DateTime.now().millisecondsSinceEpoch);
+    await prefs.setString(jsonKey, jsonEncode(json));
+    await prefs.setInt(atKey, DateTime.now().millisecondsSinceEpoch);
     return Weather.fromOpenWeatherJson(json);
   }
 
@@ -42,8 +44,8 @@ class WeatherRepository {
     return _apiService.fetchLocationFromAddress(query);
   }
 
-  Weather? _readCache(SharedPreferences prefs) {
-    final json = _readFreshJson(prefs, _cachedJsonKey, _cachedAtKey);
+  Weather? _readCache(SharedPreferences prefs, String jsonKey, String atKey) {
+    final json = _readFreshJson(prefs, jsonKey, atKey);
     return json == null ? null : Weather.fromOpenWeatherJson(json);
   }
 
@@ -53,12 +55,14 @@ class WeatherRepository {
     bool forceRefresh = false,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    final jsonKey = '${_cachedForecastJsonKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}';
+    final atKey = '${_cachedForecastAtKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}';
 
     if (!forceRefresh) {
       final cached = _readFreshJson(
         prefs,
-        _cachedForecastJsonKey,
-        _cachedForecastAtKey,
+        jsonKey,
+        atKey,
       );
       if (cached != null) return Forecast.fromOpenWeatherJson(cached);
     }
@@ -67,9 +71,9 @@ class WeatherRepository {
       latitude: latitude,
       longitude: longitude,
     );
-    await prefs.setString(_cachedForecastJsonKey, jsonEncode(json));
+    await prefs.setString(jsonKey, jsonEncode(json));
     await prefs.setInt(
-      _cachedForecastAtKey,
+      atKey,
       DateTime.now().millisecondsSinceEpoch,
     );
     return Forecast.fromOpenWeatherJson(json);
