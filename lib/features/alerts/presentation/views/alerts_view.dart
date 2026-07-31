@@ -95,9 +95,9 @@ class _AlertsViewState extends State<AlertsView> {
         bottomNavigationBar: AtmosphereBottomNavigationBar(
           selectedIndex: 2,
           onDestinationSelected: (index) {
-            if (index == 0) {
-              context.go('/');
-            }
+            if (index == 0) context.go('/');
+            else if (index == 2) context.go('/alerts');
+            else if (index == 4) context.go('/settings');
           },
         ),
         floatingActionButton: FloatingActionButton.extended(

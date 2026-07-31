@@ -655,9 +655,9 @@ class _HomeBottomNavigationBar extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       currentIndex: 0,
       onTap: (index) {
-        if (index == 2) {
-          context.go('/alerts');
-        }
+        if (index == 0) context.go('/');
+        else if (index == 2) context.go('/alerts');
+        else if (index == 4) context.go('/settings');
       },
       backgroundColor: colorScheme.surface.withValues(alpha: 0.8),
       selectedItemColor: colorScheme.primary,

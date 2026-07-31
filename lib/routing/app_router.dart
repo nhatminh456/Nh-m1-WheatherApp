@@ -15,18 +15,17 @@ import '../features/weather/domain/usecases/get_current_weather_usecase.dart';
 import '../features/weather/domain/usecases/get_home_weather_usecase.dart';
 import '../features/weather/presentation/viewmodels/weather_viewmodel.dart';
 import '../features/weather/presentation/views/weather_view.dart';
+import '../features/settings/presentation/viewmodels/settings_viewmodel.dart';
+import '../features/settings/presentation/views/settings_view.dart';
 import '../shared/repositories/auth_repository.dart';
+import '../shared/repositories/settings_repository.dart';
 
-WeatherRepository _buildWeatherRepository() {
-  final apiService = WeatherApiService(
-    apiKey: dotenv.env['OPENWEATHER_API_KEY'] ?? '',
-  );
-  return WeatherRepository(apiService);
-}
+late final GoRouter appRouter;
 
-final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
-  routes: [
+void setupRouter(SettingsViewModel settingsViewModel) {
+  appRouter = GoRouter(
+    initialLocation: '/',
+    routes: [
     GoRoute(
       path: '/',
       builder: (context, state) {
@@ -60,5 +59,21 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) {
+        return SettingsView(
+          viewModel: settingsViewModel,
+        );
+      },
+    ),
   ],
 );
+}
+
+WeatherRepository _buildWeatherRepository() {
+  final apiService = WeatherApiService(
+    apiKey: dotenv.env['OPENWEATHER_API_KEY'] ?? '',
+  );
+  return WeatherRepository(apiService);
+}
