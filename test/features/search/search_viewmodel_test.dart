@@ -1,64 +1,87 @@
-import 'dart:ui';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:weatherapp/features/search/data/models/favorite_city.dart';
 import 'package:weatherapp/features/search/data/models/history_item.dart';
 import 'package:weatherapp/features/search/data/repositories/search_repository.dart';
 import 'package:weatherapp/features/search/presentation/viewmodels/search_viewmodel.dart';
 import 'package:weatherapp/features/weather/data/models/weather.dart';
 import 'package:weatherapp/features/weather/data/repositories/weather_repository.dart';
+import 'package:weatherapp/shared/repositories/auth_repository.dart';
 
 // Fakes for testing without database or API calls
 
-class FakeSearchRepository extends Fake implements SearchRepository {
-  List<HistoryItem> history = [];
-  List<FavoriteCity> favorites = [];
+class FakeUser extends Fake implements User {
+  FakeUser({required this.uid});
 
   @override
-  Future<void> saveSearchQuery(String query) async {
+  final String uid;
+}
+
+class FakeAuthRepository extends Fake implements AuthRepository {
+  User? user;
+
+  @override
+  User? get currentUser => user;
+}
+
+class FakeSearchRepository extends Fake implements SearchRepository {
+  final Map<String, List<HistoryItem>> _historyMap = {};
+  final Map<String, List<FavoriteCity>> _favoritesMap = {};
+
+  List<HistoryItem> _getHistory(String userId) => _historyMap.putIfAbsent(userId, () => []);
+  List<FavoriteCity> _getFavorites(String userId) => _favoritesMap.putIfAbsent(userId, () => []);
+
+  @override
+  Future<void> saveSearchQuery(String query, String userId) async {
+    final history = _getHistory(userId);
     // Chống trùng
     history.removeWhere((item) => item.query.toLowerCase() == query.toLowerCase());
     history.insert(0, HistoryItem(id: history.length + 1, query: query, searchedAt: DateTime.now()));
     if (history.length > 10) {
-      history = history.sublist(0, 10);
+      _historyMap[userId] = history.sublist(0, 10);
     }
   }
 
   @override
-  Future<List<HistoryItem>> getSearchHistory() async => history;
+  Future<List<HistoryItem>> getSearchHistory(String userId) async => _getHistory(userId);
 
   @override
   Future<void> deleteHistoryItem(int id) async {
-    history.removeWhere((item) => item.id == id);
+    for (final history in _historyMap.values) {
+      history.removeWhere((item) => item.id == id);
+    }
   }
 
   @override
-  Future<void> clearSearchHistory() async {
-    history.clear();
+  Future<void> clearSearchHistory(String userId) async {
+    _getHistory(userId).clear();
   }
 
   @override
-  Future<void> addFavoriteCity(String name, double lat, double lon) async {
+  Future<void> addFavoriteCity(String name, double lat, double lon, String userId) async {
+    final favorites = _getFavorites(userId);
     favorites.add(FavoriteCity(id: favorites.length + 1, name: name, latitude: lat, longitude: lon));
   }
 
   @override
-  Future<void> removeFavoriteCity(double lat, double lon) async {
-    favorites.removeWhere((city) => (city.latitude - lat).abs() < 0.01 && (city.longitude - lon).abs() < 0.01);
+  Future<void> removeFavoriteCity(double lat, double lon, String userId) async {
+    _getFavorites(userId).removeWhere((city) => (city.latitude - lat).abs() < 0.01 && (city.longitude - lon).abs() < 0.01);
   }
 
   @override
   Future<void> removeFavoriteCityById(int id) async {
-    favorites.removeWhere((city) => city.id == id);
+    for (final favorites in _favoritesMap.values) {
+      favorites.removeWhere((city) => city.id == id);
+    }
   }
 
   @override
-  Future<List<FavoriteCity>> getFavoriteCities() async => favorites;
+  Future<List<FavoriteCity>> getFavoriteCities(String userId) async => _getFavorites(userId);
 
   @override
-  Future<bool> isCityFavorited(double lat, double lon) async {
-    return favorites.any((city) => (city.latitude - lat).abs() < 0.01 && (city.longitude - lon).abs() < 0.01);
+  Future<bool> isCityFavorited(double lat, double lon, String userId) async {
+    return _getFavorites(userId).any((city) => (city.latitude - lat).abs() < 0.01 && (city.longitude - lon).abs() < 0.01);
   }
 }
 
@@ -122,14 +145,17 @@ class FakeWeatherRepository extends Fake implements WeatherRepository {
 void main() {
   late FakeSearchRepository fakeSearchRepository;
   late FakeWeatherRepository fakeWeatherRepository;
+  late FakeAuthRepository fakeAuthRepository;
   late SearchViewModel viewModel;
 
   setUp(() {
     fakeSearchRepository = FakeSearchRepository();
     fakeWeatherRepository = FakeWeatherRepository();
+    fakeAuthRepository = FakeAuthRepository();
     viewModel = SearchViewModel(
       fakeSearchRepository,
       fakeWeatherRepository,
+      fakeAuthRepository,
     );
   });
 
@@ -188,6 +214,30 @@ void main() {
 
       await viewModel.clearAllHistory();
       expect(viewModel.history, isEmpty);
+    });
+
+    test('segmentation by userId', () async {
+      // User 1
+      fakeAuthRepository.user = FakeUser(uid: 'user1');
+      await viewModel.searchLocation('City A');
+      expect(viewModel.history.length, equals(1));
+      expect(viewModel.history.first.query, equals('City A'));
+
+      // User 2 (should have empty history)
+      fakeAuthRepository.user = FakeUser(uid: 'user2');
+      await viewModel.load(); // Refresh lists
+      expect(viewModel.history, isEmpty);
+
+      // Search on User 2
+      await viewModel.searchLocation('City B');
+      expect(viewModel.history.length, equals(1));
+      expect(viewModel.history.first.query, equals('City B'));
+
+      // Switch back to User 1 (should still have City A)
+      fakeAuthRepository.user = FakeUser(uid: 'user1');
+      await viewModel.load(); // Refresh lists
+      expect(viewModel.history.length, equals(1));
+      expect(viewModel.history.first.query, equals('City A'));
     });
   });
 }

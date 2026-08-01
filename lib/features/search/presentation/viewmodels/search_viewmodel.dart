@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../../../shared/repositories/auth_repository.dart';
 import '../../../weather/data/models/weather.dart';
 import '../../../weather/data/repositories/weather_repository.dart';
 import '../../data/models/favorite_city.dart';
@@ -11,10 +12,14 @@ class SearchViewModel extends ChangeNotifier {
   SearchViewModel(
     this._searchRepository,
     this._weatherRepository,
+    this._authRepository,
   );
 
   final SearchRepository _searchRepository;
   final WeatherRepository _weatherRepository;
+  final AuthRepository _authRepository;
+
+  String get _currentUserId => _authRepository.currentUser?.uid ?? 'guest';
 
   SearchStatus _status = SearchStatus.initial;
   List<HistoryItem> _history = [];
@@ -50,11 +55,11 @@ class SearchViewModel extends ChangeNotifier {
   }
 
   Future<void> _loadHistory() async {
-    _history = await _searchRepository.getSearchHistory();
+    _history = await _searchRepository.getSearchHistory(_currentUserId);
   }
 
   Future<void> _loadFavorites() async {
-    _favoriteCities = await _searchRepository.getFavoriteCities();
+    _favoriteCities = await _searchRepository.getFavoriteCities(_currentUserId);
     // Tải thông tin thời tiết song song cho các thành phố yêu thích
     final futures = _favoriteCities.map((city) async {
       try {
@@ -89,7 +94,7 @@ class SearchViewModel extends ChangeNotifier {
 
   Future<void> clearAllHistory() async {
     try {
-      await _searchRepository.clearSearchHistory();
+      await _searchRepository.clearSearchHistory(_currentUserId);
       _history.clear();
       if (_history.isEmpty && _favoriteCities.isEmpty) {
         _status = SearchStatus.empty;
@@ -130,7 +135,7 @@ class SearchViewModel extends ChangeNotifier {
       final displayName = loc['name'] as String? ?? trimmed;
 
       // Lưu vào lịch sử tìm kiếm
-      await _searchRepository.saveSearchQuery(displayName);
+      await _searchRepository.saveSearchQuery(displayName, _currentUserId);
       await _loadHistory();
 
       _status = SearchStatus.success;
@@ -151,12 +156,12 @@ class SearchViewModel extends ChangeNotifier {
 
   Future<void> toggleFavorite(String name, double lat, double lon) async {
     try {
-      final isFav = await _searchRepository.isCityFavorited(lat, lon);
+      final isFav = await _searchRepository.isCityFavorited(lat, lon, _currentUserId);
       if (isFav) {
-        await _searchRepository.removeFavoriteCity(lat, lon);
+        await _searchRepository.removeFavoriteCity(lat, lon, _currentUserId);
         _favoriteWeatherMap.remove('${lat}_$lon');
       } else {
-        await _searchRepository.addFavoriteCity(name, lat, lon);
+        await _searchRepository.addFavoriteCity(name, lat, lon, _currentUserId);
         // Tải thời tiết cho mục mới thêm
         try {
           final weather = await _weatherRepository.getCurrentWeather(
@@ -175,6 +180,6 @@ class SearchViewModel extends ChangeNotifier {
   }
 
   Future<bool> checkIsFavorite(double lat, double lon) async {
-    return _searchRepository.isCityFavorited(lat, lon);
+    return _searchRepository.isCityFavorited(lat, lon, _currentUserId);
   }
 }

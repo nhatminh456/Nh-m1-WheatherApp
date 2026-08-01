@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../search/data/repositories/search_repository.dart';
 import '../../../search/data/services/search_local_service.dart';
+import '../../../../shared/repositories/auth_repository.dart';
 import '../viewmodels/weather_viewmodel.dart';
 
 class WeatherView extends StatefulWidget {
@@ -26,6 +27,7 @@ class WeatherView extends StatefulWidget {
 
 class _WeatherViewState extends State<WeatherView> {
   final SearchRepository _searchRepository = SearchRepository(SearchLocalService());
+  final AuthRepository _authRepository = AuthRepository();
   bool _isFavorite = false;
 
   @override
@@ -57,6 +59,7 @@ class _WeatherViewState extends State<WeatherView> {
       final isFav = await _searchRepository.isCityFavorited(
         weather.latitude,
         weather.longitude,
+        _authRepository.currentUser?.uid ?? 'guest',
       );
       if (mounted) {
         setState(() {
@@ -69,16 +72,19 @@ class _WeatherViewState extends State<WeatherView> {
   Future<void> _toggleFavorite() async {
     final weather = widget.viewModel.weather;
     if (weather != null) {
+      final userId = _authRepository.currentUser?.uid ?? 'guest';
       if (_isFavorite) {
         await _searchRepository.removeFavoriteCity(
           weather.latitude,
           weather.longitude,
+          userId,
         );
       } else {
         await _searchRepository.addFavoriteCity(
           weather.cityName,
           weather.latitude,
           weather.longitude,
+          userId,
         );
       }
       await _checkFavoriteStatus();

@@ -12,17 +12,17 @@ class SearchLocalService {
 
   // --- Lịch sử tìm kiếm (search_history table) ---
 
-  Future<void> insertHistory(String query) async {
+  Future<void> insertHistory(String query, String userId) async {
     final db = await _database;
     final trimmedQuery = query.trim();
     if (trimmedQuery.isEmpty) return;
 
     await db.transaction((txn) async {
-      // Chống trùng: kiểm tra xem từ khóa đã tồn tại trong lịch sử chưa
+      // Chống trùng: kiểm tra xem từ khóa đã tồn tại trong lịch sử của user đó chưa
       final List<Map<String, dynamic>> existing = await txn.query(
         'search_history',
-        where: 'LOWER(query) = ?',
-        whereArgs: [trimmedQuery.toLowerCase()],
+        where: 'LOWER(query) = ? AND user_id = ?',
+        whereArgs: [trimmedQuery.toLowerCase(), userId],
       );
 
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -42,25 +42,29 @@ class SearchLocalService {
           'query': trimmedQuery,
           'searched_at': now,
           'is_favorite': 0,
+          'user_id': userId,
         });
       }
 
       // Giới hạn số lượng lịch sử tối đa 10 mục: xóa các mục cũ nhất vượt quá giới hạn
       await txn.execute('''
         DELETE FROM search_history 
-        WHERE id NOT IN (
+        WHERE user_id = ? AND id NOT IN (
           SELECT id FROM search_history 
+          WHERE user_id = ?
           ORDER BY searched_at DESC 
           LIMIT 10
         )
-      ''');
+      ''', [userId, userId]);
     });
   }
 
-  Future<List<Map<String, dynamic>>> getHistory() async {
+  Future<List<Map<String, dynamic>>> getHistory(String userId) async {
     final db = await _database;
     return db.query(
       'search_history',
+      where: 'user_id = ?',
+      whereArgs: [userId],
       orderBy: 'searched_at DESC',
     );
   }
@@ -74,23 +78,27 @@ class SearchLocalService {
     );
   }
 
-  Future<void> clearHistory() async {
+  Future<void> clearHistory(String userId) async {
     final db = await _database;
-    await db.delete('search_history');
+    await db.delete(
+      'search_history',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
   }
 
   // --- Thành phố yêu thích (locations table) ---
 
-  Future<void> insertFavorite(String name, double lat, double lon) async {
+  Future<void> insertFavorite(String name, double lat, double lon, String userId) async {
     final db = await _database;
     final trimmedName = name.trim();
 
     await db.transaction((txn) async {
-      // Tránh thêm trùng: kiểm tra dựa trên khoảng tọa độ gần nhau (sai số nhỏ hơn 0.01 độ ~ 1km)
+      // Tránh thêm trùng: kiểm tra dựa trên khoảng tọa độ gần nhau và user_id
       final List<Map<String, dynamic>> existing = await txn.rawQuery('''
         SELECT id FROM locations 
-        WHERE ABS(latitude - ?) < 0.01 AND ABS(longitude - ?) < 0.01
-      ''', [lat, lon]);
+        WHERE ABS(latitude - ?) < 0.01 AND ABS(longitude - ?) < 0.01 AND user_id = ?
+      ''', [lat, lon, userId]);
 
       if (existing.isEmpty) {
         await txn.insert('locations', {
@@ -98,17 +106,18 @@ class SearchLocalService {
           'latitude': lat,
           'longitude': lon,
           'sort_order': 0,
+          'user_id': userId,
         });
       }
     });
   }
 
-  Future<void> deleteFavorite(double lat, double lon) async {
+  Future<void> deleteFavorite(double lat, double lon, String userId) async {
     final db = await _database;
     await db.delete(
       'locations',
-      where: 'ABS(latitude - ?) < 0.01 AND ABS(longitude - ?) < 0.01',
-      whereArgs: [lat, lon],
+      where: 'ABS(latitude - ?) < 0.01 AND ABS(longitude - ?) < 0.01 AND user_id = ?',
+      whereArgs: [lat, lon, userId],
     );
   }
 
@@ -121,17 +130,22 @@ class SearchLocalService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getFavorites() async {
+  Future<List<Map<String, dynamic>>> getFavorites(String userId) async {
     final db = await _database;
-    return db.query('locations', orderBy: 'id DESC');
+    return db.query(
+      'locations',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'id DESC',
+    );
   }
 
-  Future<bool> isFavorite(double lat, double lon) async {
+  Future<bool> isFavorite(double lat, double lon, String userId) async {
     final db = await _database;
     final List<Map<String, dynamic>> result = await db.rawQuery('''
       SELECT COUNT(*) as count FROM locations 
-      WHERE ABS(latitude - ?) < 0.01 AND ABS(longitude - ?) < 0.01
-    ''', [lat, lon]);
+      WHERE ABS(latitude - ?) < 0.01 AND ABS(longitude - ?) < 0.01 AND user_id = ?
+    ''', [lat, lon, userId]);
 
     final count = Sqflite.firstIntValue(result) ?? 0;
     return count > 0;

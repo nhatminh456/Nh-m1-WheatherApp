@@ -74,7 +74,7 @@ final GoRouter appRouter = GoRouter(
         final searchRepo = SearchRepository(SearchLocalService());
         final weatherRepo = _buildWeatherRepository();
         return SearchView(
-          viewModel: SearchViewModel(searchRepo, weatherRepo),
+          viewModel: SearchViewModel(searchRepo, weatherRepo, AuthRepository()),
         );
       },
     ),

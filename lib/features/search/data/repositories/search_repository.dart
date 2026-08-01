@@ -9,12 +9,12 @@ class SearchRepository {
 
   // --- Lịch sử tìm kiếm ---
 
-  Future<void> saveSearchQuery(String query) async {
-    await _localService.insertHistory(query);
+  Future<void> saveSearchQuery(String query, String userId) async {
+    await _localService.insertHistory(query, userId);
   }
 
-  Future<List<HistoryItem>> getSearchHistory() async {
-    final rawData = await _localService.getHistory();
+  Future<List<HistoryItem>> getSearchHistory(String userId) async {
+    final rawData = await _localService.getHistory(userId);
     return rawData.map((map) => HistoryItem.fromMap(map)).toList();
   }
 
@@ -22,30 +22,30 @@ class SearchRepository {
     await _localService.deleteHistoryItem(id);
   }
 
-  Future<void> clearSearchHistory() async {
-    await _localService.clearHistory();
+  Future<void> clearSearchHistory(String userId) async {
+    await _localService.clearHistory(userId);
   }
 
   // --- Thành phố yêu thích ---
 
-  Future<void> addFavoriteCity(String name, double lat, double lon) async {
-    await _localService.insertFavorite(name, lat, lon);
+  Future<void> addFavoriteCity(String name, double lat, double lon, String userId) async {
+    await _localService.insertFavorite(name, lat, lon, userId);
   }
 
-  Future<void> removeFavoriteCity(double lat, double lon) async {
-    await _localService.deleteFavorite(lat, lon);
+  Future<void> removeFavoriteCity(double lat, double lon, String userId) async {
+    await _localService.deleteFavorite(lat, lon, userId);
   }
 
   Future<void> removeFavoriteCityById(int id) async {
     await _localService.deleteFavoriteById(id);
   }
 
-  Future<List<FavoriteCity>> getFavoriteCities() async {
-    final rawData = await _localService.getFavorites();
+  Future<List<FavoriteCity>> getFavoriteCities(String userId) async {
+    final rawData = await _localService.getFavorites(userId);
     return rawData.map((map) => FavoriteCity.fromMap(map)).toList();
   }
 
-  Future<bool> isCityFavorited(double lat, double lon) async {
-    return _localService.isFavorite(lat, lon);
+  Future<bool> isCityFavorited(double lat, double lon, String userId) async {
+    return _localService.isFavorite(lat, lon, userId);
   }
 }

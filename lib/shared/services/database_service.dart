@@ -12,7 +12,7 @@ class DatabaseService {
   static final DatabaseService instance = DatabaseService._internal();
 
   static const _dbName = 'weatherapp.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
 
   Database? _db;
 
@@ -50,7 +50,8 @@ class DatabaseService {
         name TEXT NOT NULL,
         latitude REAL NOT NULL,
         longitude REAL NOT NULL,
-        sort_order INTEGER NOT NULL DEFAULT 0
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        user_id TEXT NOT NULL DEFAULT 'guest'
       )
     ''');
 
@@ -70,7 +71,8 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         query TEXT NOT NULL,
         is_favorite INTEGER NOT NULL DEFAULT 0,
-        searched_at INTEGER NOT NULL
+        searched_at INTEGER NOT NULL,
+        user_id TEXT NOT NULL DEFAULT 'guest'
       )
     ''');
   }
@@ -86,7 +88,8 @@ class DatabaseService {
           name TEXT NOT NULL,
           latitude REAL NOT NULL,
           longitude REAL NOT NULL,
-          sort_order INTEGER NOT NULL DEFAULT 0
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          user_id TEXT NOT NULL DEFAULT 'guest'
         )
       ''');
       await db.execute('''
@@ -94,9 +97,22 @@ class DatabaseService {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           query TEXT NOT NULL,
           is_favorite INTEGER NOT NULL DEFAULT 0,
-          searched_at INTEGER NOT NULL
+          searched_at INTEGER NOT NULL,
+          user_id TEXT NOT NULL DEFAULT 'guest'
         )
       ''');
+    }
+    if (oldVersion < 3) {
+      try {
+        await db.execute(
+          "ALTER TABLE locations ADD COLUMN user_id TEXT NOT NULL DEFAULT 'guest'",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE search_history ADD COLUMN user_id TEXT NOT NULL DEFAULT 'guest'",
+        );
+      } catch (_) {}
     }
   }
 
