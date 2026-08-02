@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:reicon_flutter/reicon_flutter.dart';
+import 'package:weatherapp/l10n/generated/app_localizations.dart';
 
 import '../../../../../shared/utilities/forecast_util.dart';
 import '../../viewmodels/search_viewmodel.dart';
@@ -21,6 +22,7 @@ class FavoritesView extends StatelessWidget {
     final primary = colorScheme.primary;
     final onSurface = colorScheme.onSurface;
     final onSurfaceVariant = colorScheme.onSurfaceVariant;
+    final l10n = AppLocalizations.of(context)!;
 
     final favorites = viewModel.favoriteCities;
 
@@ -38,7 +40,7 @@ class FavoritesView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Chưa có địa điểm yêu thích',
+                l10n.noFavorites,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -47,7 +49,7 @@ class FavoritesView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Đánh dấu sao các thành phố để theo dõi nhanh thời tiết tại đây.',
+                l10n.favoritesInstructions,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -66,7 +68,7 @@ class FavoritesView extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Text(
-            'Đã lưu',
+            l10n.saved,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -109,7 +111,7 @@ class FavoritesView extends StatelessWidget {
                                   ? (weather.description.isNotEmpty
                                       ? '${weather.description[0].toUpperCase()}${weather.description.substring(1)}'
                                       : weather.condition)
-                                  : 'Đang tải thời tiết...',
+                                  : l10n.loadingWeather,
                               style: TextStyle(
                                 fontSize: 14,
                                 color: onSurfaceVariant,

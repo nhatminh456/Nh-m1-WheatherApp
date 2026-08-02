@@ -121,6 +121,7 @@ class FakeWeatherRepository extends Fake implements WeatherRepository {
     required double latitude,
     required double longitude,
     bool forceRefresh = false,
+    String? languageCode,
   }) async {
     return Weather(
       cityName: 'Test City',

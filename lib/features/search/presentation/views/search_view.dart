@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reicon_flutter/reicon_flutter.dart';
+import 'package:weatherapp/l10n/generated/app_localizations.dart';
 
 import '../viewmodels/search_viewmodel.dart';
 import 'widgets/favorites_view.dart';
@@ -19,12 +20,22 @@ class SearchView extends StatefulWidget {
 class _SearchViewState extends State<SearchView> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    widget.viewModel.load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      final locale = Localizations.localeOf(context).languageCode;
+      widget.viewModel.load(languageCode: locale);
+      _isInitialized = true;
+    }
   }
 
   @override
@@ -36,9 +47,10 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
 
   Future<void> _onSearchSubmit(String query) async {
     final trimmed = query.trim();
+    final l10n = AppLocalizations.of(context)!;
     if (trimmed.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập tên thành phố!')),
+        SnackBar(content: Text(l10n.emptySearchHint)),
       );
       return;
     }
@@ -75,6 +87,7 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
     final onSurface = colorScheme.onSurface;
     final onSurfaceVariant = colorScheme.onSurfaceVariant;
     final surfaceVariant = colorScheme.surfaceContainerHighest;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       decoration: BoxDecoration(
@@ -99,7 +112,7 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
             onPressed: () => context.go('/'),
           ),
           title: Text(
-            'Tìm kiếm địa điểm',
+            l10n.searchLocation,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -111,6 +124,7 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
           child: ListenableBuilder(
             listenable: widget.viewModel,
             builder: (context, _) {
+              final localeCode = Localizations.localeOf(context).languageCode;
               return Column(
                 children: [
                   // Thanh Tìm kiếm (Search Bar)
@@ -122,7 +136,7 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
                         controller: _searchController,
                         style: TextStyle(color: onSurface),
                         decoration: InputDecoration(
-                          hintText: 'Nhập tên thành phố (ví dụ: Hà Nội)...',
+                          hintText: l10n.searchHint,
                           hintStyle: TextStyle(
                             color: onSurfaceVariant.withValues(alpha: 0.6),
                           ),
@@ -181,9 +195,9 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
                         labelColor: primary,
                         unselectedLabelColor: onSurfaceVariant,
                         labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                        tabs: const [
-                          Tab(text: 'Lịch sử tìm kiếm'),
-                          Tab(text: 'Yêu thích'),
+                        tabs: [
+                          Tab(text: l10n.searchHistory),
+                          Tab(text: l10n.favorites),
                         ],
                       ),
                     ),
@@ -196,7 +210,7 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
                       children: [
                         // Tab Lịch sử tìm kiếm
                         RefreshIndicator(
-                          onRefresh: widget.viewModel.load,
+                          onRefresh: () => widget.viewModel.load(languageCode: localeCode),
                           child: ListView(
                             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                             children: [
@@ -210,7 +224,7 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
 
                         // Tab Yêu thích
                         RefreshIndicator(
-                          onRefresh: widget.viewModel.load,
+                          onRefresh: () => widget.viewModel.load(languageCode: localeCode),
                           child: ListView(
                             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                             children: [

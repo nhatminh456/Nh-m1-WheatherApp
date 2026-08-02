@@ -1,0 +1,19 @@
+{
+  "searchLocation": "Search Location",
+  "searchHint": "Enter city name (e.g. London)...",
+  "searchHistory": "Search History",
+  "favorites": "Favorites",
+  "emptySearchHint": "Please enter a city name!",
+  "noHistory": "No search history",
+  "historyInstructions": "Search for cities to view weather information.",
+  "recent": "Recent",
+  "clearAll": "Clear All",
+  "clearHistoryDialogTitle": "Clear history?",
+  "clearHistoryDialogContent": "Are you sure you want to clear your entire search history?",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "noFavorites": "No favorite locations",
+  "favoritesInstructions": "Star cities to quickly track their weather here.",
+  "saved": "Saved",
+  "loadingWeather": "Loading weather..."
+}

@@ -1,0 +1,19 @@
+{
+  "searchLocation": "Tìm kiếm địa điểm",
+  "searchHint": "Nhập tên thành phố (ví dụ: Hà Nội)...",
+  "searchHistory": "Lịch sử tìm kiếm",
+  "favorites": "Yêu thích",
+  "emptySearchHint": "Vui lòng nhập tên thành phố!",
+  "noHistory": "Chưa có lịch sử tìm kiếm",
+  "historyInstructions": "Tìm kiếm các thành phố để xem thông tin thời tiết.",
+  "recent": "Gần đây",
+  "clearAll": "Xóa hết",
+  "clearHistoryDialogTitle": "Xóa lịch sử?",
+  "clearHistoryDialogContent": "Bạn có chắc chắn muốn xóa toàn bộ lịch sử tìm kiếm không?",
+  "cancel": "Hủy",
+  "delete": "Xóa",
+  "noFavorites": "Chưa có địa điểm yêu thích",
+  "favoritesInstructions": "Đánh dấu sao các thành phố để theo dõi nhanh thời tiết tại đây.",
+  "saved": "Đã lưu",
+  "loadingWeather": "Đang tải thời tiết..."
+}

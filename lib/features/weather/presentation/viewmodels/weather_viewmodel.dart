@@ -22,6 +22,7 @@ class WeatherViewModel extends ChangeNotifier {
     double? latitude,
     double? longitude,
     bool forceRefresh = false,
+    String? languageCode,
   }) async {
     _status = WeatherLoadStatus.loading;
     notifyListeners();
@@ -31,6 +32,7 @@ class WeatherViewModel extends ChangeNotifier {
         latitude: latitude,
         longitude: longitude,
         forceRefresh: forceRefresh,
+        languageCode: languageCode,
       );
       _status = WeatherLoadStatus.success;
     } catch (e) {

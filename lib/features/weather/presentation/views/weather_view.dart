@@ -30,14 +30,26 @@ class _WeatherViewState extends State<WeatherView> {
   final AuthRepository _authRepository = AuthRepository();
   bool _isFavorite = false;
 
+  bool _isInitialized = false;
+
   @override
   void initState() {
     super.initState();
-    widget.viewModel.loadCurrentWeather(
-      latitude: widget.latitude,
-      longitude: widget.longitude,
-    );
     widget.viewModel.addListener(_onViewModelChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      final locale = Localizations.localeOf(context).languageCode;
+      widget.viewModel.loadCurrentWeather(
+        latitude: widget.latitude,
+        longitude: widget.longitude,
+        languageCode: locale,
+      );
+      _isInitialized = true;
+    }
   }
 
   @override
@@ -119,6 +131,7 @@ class _WeatherViewState extends State<WeatherView> {
           latitude: widget.latitude,
           longitude: widget.longitude,
           forceRefresh: true,
+          languageCode: Localizations.localeOf(context).languageCode,
         ),
         child: ListenableBuilder(
           listenable: widget.viewModel,

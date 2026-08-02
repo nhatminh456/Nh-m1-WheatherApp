@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:weatherapp/l10n/generated/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -42,6 +44,16 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.montserratTextTheme(),
       ),
       routerConfig: appRouter,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('vi'),
+        Locale('en'),
+      ],
       debugShowCheckedModeBanner: false,
     );
   }

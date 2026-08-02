@@ -35,14 +35,14 @@ class SearchViewModel extends ChangeNotifier {
 
   // --- Khởi tạo dữ liệu ---
 
-  Future<void> load() async {
+  Future<void> load({String? languageCode}) async {
     _status = SearchStatus.loading;
     notifyListeners();
 
     try {
       await Future.wait([
         _loadHistory(),
-        _loadFavorites(),
+        _loadFavorites(languageCode: languageCode),
       ]);
       _status = (_history.isEmpty && _favoriteCities.isEmpty)
           ? SearchStatus.empty
@@ -58,7 +58,7 @@ class SearchViewModel extends ChangeNotifier {
     _history = await _searchRepository.getSearchHistory(_currentUserId);
   }
 
-  Future<void> _loadFavorites() async {
+  Future<void> _loadFavorites({String? languageCode}) async {
     _favoriteCities = await _searchRepository.getFavoriteCities(_currentUserId);
     // Tải thông tin thời tiết song song cho các thành phố yêu thích
     final futures = _favoriteCities.map((city) async {
@@ -67,6 +67,7 @@ class SearchViewModel extends ChangeNotifier {
           latitude: city.latitude,
           longitude: city.longitude,
           forceRefresh: false, // Sử dụng cache nếu có
+          languageCode: languageCode,
         );
         _favoriteWeatherMap['${city.latitude}_${city.longitude}'] = weather;
       } catch (_) {
@@ -154,7 +155,7 @@ class SearchViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> toggleFavorite(String name, double lat, double lon) async {
+  Future<void> toggleFavorite(String name, double lat, double lon, {String? languageCode}) async {
     try {
       final isFav = await _searchRepository.isCityFavorited(lat, lon, _currentUserId);
       if (isFav) {
@@ -167,11 +168,12 @@ class SearchViewModel extends ChangeNotifier {
           final weather = await _weatherRepository.getCurrentWeather(
             latitude: lat,
             longitude: lon,
+            languageCode: languageCode,
           );
           _favoriteWeatherMap['${lat}_$lon'] = weather;
         } catch (_) {}
       }
-      await _loadFavorites();
+      await _loadFavorites(languageCode: languageCode);
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Lỗi cập nhật danh sách yêu thích: $e';

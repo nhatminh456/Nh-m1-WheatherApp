@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:reicon_flutter/reicon_flutter.dart';
+import 'package:weatherapp/l10n/generated/app_localizations.dart';
 
 import '../../viewmodels/search_viewmodel.dart';
 
@@ -22,6 +23,7 @@ class HistoryView extends StatelessWidget {
     final onSurfaceVariant = colorScheme.onSurfaceVariant;
     final surfaceVariant = colorScheme.surfaceContainerHighest;
     final error = colorScheme.error;
+    final l10n = AppLocalizations.of(context)!;
     
     final history = viewModel.history;
 
@@ -39,7 +41,7 @@ class HistoryView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Chưa có lịch sử tìm kiếm',
+                l10n.noHistory,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -48,7 +50,7 @@ class HistoryView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Tìm kiếm các thành phố để xem thông tin thời tiết.',
+                l10n.historyInstructions,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -70,7 +72,7 @@ class HistoryView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Gần đây',
+                l10n.recent,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -85,7 +87,7 @@ class HistoryView extends StatelessWidget {
                   color: error,
                 ),
                 label: Text(
-                  'Xóa hết',
+                  l10n.clearAll,
                   style: TextStyle(color: error),
                 ),
               ),
@@ -173,19 +175,20 @@ class HistoryView extends StatelessWidget {
   }
 
   void _showClearConfirmation(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Xóa lịch sử?'),
-          content: const Text('Bạn có chắc chắn muốn xóa toàn bộ lịch sử tìm kiếm không?'),
+          title: Text(l10n.clearHistoryDialogTitle),
+          content: Text(l10n.clearHistoryDialogContent),
           actions: <Widget>[
             TextButton(
-              child: Text('Hủy', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              child: Text(l10n.cancel, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: Text('Xóa', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              child: Text(l10n.delete, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               onPressed: () {
                 viewModel.clearAllHistory();
                 Navigator.of(context).pop();

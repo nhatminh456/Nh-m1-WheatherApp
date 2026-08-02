@@ -21,10 +21,12 @@ class WeatherRepository {
     required double latitude,
     required double longitude,
     bool forceRefresh = false,
+    String? languageCode,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonKey = '${_cachedJsonKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}';
-    final atKey = '${_cachedAtKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}';
+    final langSuffix = languageCode ?? 'vi';
+    final jsonKey = '${_cachedJsonKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}_$langSuffix';
+    final atKey = '${_cachedAtKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}_$langSuffix';
 
     if (!forceRefresh) {
       final cached = _readCache(prefs, jsonKey, atKey);
@@ -34,6 +36,7 @@ class WeatherRepository {
     final json = await _apiService.fetchCurrentWeather(
       latitude: latitude,
       longitude: longitude,
+      languageCode: languageCode,
     );
     await prefs.setString(jsonKey, jsonEncode(json));
     await prefs.setInt(atKey, DateTime.now().millisecondsSinceEpoch);
@@ -53,10 +56,12 @@ class WeatherRepository {
     required double latitude,
     required double longitude,
     bool forceRefresh = false,
+    String? languageCode,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonKey = '${_cachedForecastJsonKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}';
-    final atKey = '${_cachedForecastAtKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}';
+    final langSuffix = languageCode ?? 'vi';
+    final jsonKey = '${_cachedForecastJsonKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}_$langSuffix';
+    final atKey = '${_cachedForecastAtKey}_${latitude.toStringAsFixed(2)}_${longitude.toStringAsFixed(2)}_$langSuffix';
 
     if (!forceRefresh) {
       final cached = _readFreshJson(
@@ -70,6 +75,7 @@ class WeatherRepository {
     final json = await _apiService.fetchForecast(
       latitude: latitude,
       longitude: longitude,
+      languageCode: languageCode,
     );
     await prefs.setString(jsonKey, jsonEncode(json));
     await prefs.setInt(

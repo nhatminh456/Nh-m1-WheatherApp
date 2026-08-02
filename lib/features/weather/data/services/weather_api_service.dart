@@ -17,12 +17,14 @@ class WeatherApiService {
   Future<Map<String, dynamic>> fetchCurrentWeather({
     required double latitude,
     required double longitude,
-  }) => _get(_currentWeatherUrl, latitude, longitude);
+    String? languageCode,
+  }) => _get(_currentWeatherUrl, latitude, longitude, languageCode: languageCode);
 
   Future<Map<String, dynamic>> fetchForecast({
     required double latitude,
     required double longitude,
-  }) => _get(_forecastUrl, latitude, longitude);
+    String? languageCode,
+  }) => _get(_forecastUrl, latitude, longitude, languageCode: languageCode);
 
   Future<List<Map<String, dynamic>>> fetchLocationFromAddress(String query) async {
     final uri = Uri.parse('https://api.openweathermap.org/geo/1.0/direct').replace(
@@ -46,15 +48,16 @@ class WeatherApiService {
   Future<Map<String, dynamic>> _get(
     String url,
     double latitude,
-    double longitude,
-  ) async {
+    double longitude, {
+    String? languageCode,
+  }) async {
     final uri = Uri.parse(url).replace(
       queryParameters: {
         'lat': latitude.toString(),
         'lon': longitude.toString(),
         'appid': apiKey,
         'units': 'metric',
-        'lang': 'vi',
+        'lang': languageCode ?? 'vi',
       },
     );
 

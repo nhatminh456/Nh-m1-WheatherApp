@@ -12,6 +12,7 @@ class GetCurrentWeatherUseCase {
     double? latitude,
     double? longitude,
     bool forceRefresh = false,
+    String? languageCode,
   }) async {
     final double lat;
     final double lon;
@@ -29,6 +30,7 @@ class GetCurrentWeatherUseCase {
       latitude: lat,
       longitude: lon,
       forceRefresh: forceRefresh,
+      languageCode: languageCode,
     );
   }
 }
