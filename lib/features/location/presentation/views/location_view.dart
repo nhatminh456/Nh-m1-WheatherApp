@@ -7,15 +7,14 @@ import '../viewmodels/location_viewmodel.dart';
 
 class LocationView extends StatefulWidget {
   const LocationView({super.key, required this.viewModel});
-
   final LocationViewModel viewModel;
-
   @override
   State<LocationView> createState() => _LocationViewState();
 }
 
 class _LocationViewState extends State<LocationView> {
   @override
+  // initState là constructor, chỉ chạy 1 lần
   void initState() {
     super.initState();
     widget.viewModel.loadLocations();
@@ -26,23 +25,18 @@ class _LocationViewState extends State<LocationView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Saved Locations'),
+        // canh giữa tiêu đề
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/'),
         ),
       ),
+      // quy định vị trí nằm bên phải
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          FloatingActionButton.extended(
-            heroTag: 'location_home_fab',
-            onPressed: () => context.go('/'),
-            icon: const Icon(Icons.home),
-            label: const Text('Home'),
-          ),
-          const SizedBox(width: 12),
           FloatingActionButton(
             heroTag: 'location_add_fab',
             onPressed: _showAddDialog,
@@ -52,6 +46,7 @@ class _LocationViewState extends State<LocationView> {
         ],
       ),
       body: ListenableBuilder(
+        // khi viewmodel gọi notify tự rebuild lại UI
         listenable: widget.viewModel,
         builder: (context, _) {
           final status = widget.viewModel.status;
@@ -63,7 +58,7 @@ class _LocationViewState extends State<LocationView> {
           if (isLoading && items.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-
+          // check xem có lỗi không nếu có hiển thị ra chính giữa *
           if (status == LocationStatus.error) {
             return Center(
               child: Padding(
@@ -75,7 +70,7 @@ class _LocationViewState extends State<LocationView> {
               ),
             );
           }
-
+          // nếu không có thêm gì hết thì hiển thị
           if (status == LocationStatus.success && items.isEmpty) {
             return RefreshIndicator(
               onRefresh: widget.viewModel.loadLocations,
@@ -102,10 +97,11 @@ class _LocationViewState extends State<LocationView> {
 
           return RefreshIndicator(
             onRefresh: widget.viewModel.loadLocations,
+            // cho phép mình kéo thả để sắp xếp lại danh sách các City
             child: ReorderableListView.builder(
-              buildDefaultDragHandles: false,
+              buildDefaultDragHandles: false, // muốn kéo thả thì để là false
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
-              itemCount: items.length,
+              itemCount: items.length, // đếm coi có bao nhiêu city
               onReorderItem: (oldIndex, newIndex) async {
                 await _onReorder(oldIndex, newIndex);
               },
@@ -115,6 +111,7 @@ class _LocationViewState extends State<LocationView> {
                 final weather = item.weather;
 
                 return Card(
+                  // đại diện cho 1 city
                   key: ValueKey(location.id ?? index),
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   child: ListTile(
@@ -147,19 +144,41 @@ class _LocationViewState extends State<LocationView> {
                     ),
                     trailing: PopupMenuButton<String>(
                       onSelected: (value) async {
-                        if (value == 'edit') {
-                          await _showEditDialog(location);
-                        } else if (value == 'delete' && location.id != null) {
-                          await _deleteLocation(location.id!);
+                        switch (value) {
+                          case 'default':
+                            if (location.id != null) {
+                              await widget.viewModel.setDefault(location.id!);
+                            }
+                            break;
+
+                          case 'edit':
+                            await _showEditDialog(location);
+                            break;
+
+                          case 'delete':
+                            if (location.id != null) {
+                              await _deleteLocation(location.id!);
+                            }
+                            break;
                         }
                       },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Text('Sửa tên hiển thị'),
-                        ),
-                        PopupMenuItem(value: 'delete', child: Text('Xóa')),
-                      ],
+                      itemBuilder: (context) {
+                        return <PopupMenuEntry<String>>[
+                          if (!location.isDefault)
+                            const PopupMenuItem<String>(
+                              value: 'default',
+                              child: Text('Đặt làm mặc định'),
+                            ),
+                          const PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text('Sửa tên hiển thị'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Xóa'),
+                          ),
+                        ];
+                      },
                     ),
                   ),
                 );
@@ -173,6 +192,8 @@ class _LocationViewState extends State<LocationView> {
 
   Future<void> _onReorder(int oldIndex, int newIndex) async {
     final locations = [...widget.viewModel.items.map((e) => e.location)];
+    // -1 là vì khi kéo vào index mới thì nó sẽ đẩy cái cũ xuống 1 bậc nên phải
+    //trừ đi 1
     if (oldIndex < newIndex) newIndex -= 1;
     final moved = locations.removeAt(oldIndex);
     locations.insert(newIndex, moved);
@@ -183,33 +204,36 @@ class _LocationViewState extends State<LocationView> {
     await widget.viewModel.reorderLocations(reordered);
   }
 
+  //
   Future<void> _showAddDialog() async {
     await showDialog<void>(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: false, // nâng cao UX
       builder: (dialogContext) {
         return _LocationEditorDialog(
-          viewModel: widget.viewModel,
+          viewModel: widget.viewModel, // truyền viewmodel lấy data
           onSave: (location) => widget.viewModel.addLocation(location),
         );
       },
     );
   }
 
+  //
   Future<void> _showEditDialog(LocationModel location) async {
-    final aliasController = TextEditingController(text: location.displayName);
+    var newName = location.displayName;
 
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: Text('Sửa ${location.name}'),
-          content: TextField(
-            controller: aliasController,
+          content: TextFormField(
+            initialValue: location.displayName,
             decoration: const InputDecoration(
               labelText: 'Tên hiển thị',
               hintText: 'VD: Nhà',
             ),
+            onChanged: (v) => newName = v,
           ),
           actions: [
             TextButton(
@@ -219,11 +243,15 @@ class _LocationViewState extends State<LocationView> {
             FilledButton(
               onPressed: () async {
                 final navigator = Navigator.of(dialogContext);
-                await widget.viewModel.updateLocation(
-                  location.copyWith(displayName: aliasController.text.trim()),
-                );
-                if (!mounted) return;
+                final trimmed = newName.trim();
+
+                // Close dialog first to avoid lifecycle races
+                if (!navigator.mounted) return;
                 navigator.pop();
+
+                await widget.viewModel.updateLocation(
+                  location.copyWith(displayName: trimmed),
+                );
               },
               child: const Text('Lưu'),
             ),
@@ -231,8 +259,6 @@ class _LocationViewState extends State<LocationView> {
         );
       },
     );
-
-    aliasController.dispose();
   }
 
   Future<void> _deleteLocation(int id) async {
@@ -293,7 +319,7 @@ class _LocationEditorDialogState extends State<_LocationEditorDialog> {
       title: const Text('Thêm thành phố'),
       content: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min, // tránh bị tràn màn hình
           children: [
             TextField(
               controller: _cityController,
@@ -330,8 +356,8 @@ class _LocationEditorDialogState extends State<_LocationEditorDialog> {
               TextField(
                 controller: _latitudeController,
                 keyboardType: const TextInputType.numberWithOptions(
-                  signed: true,
-                  decimal: true,
+                  signed: true, // cho nhap so am
+                  decimal: true, // cho nhap so thap phan
                 ),
                 decoration: const InputDecoration(
                   labelText: 'Vĩ độ',
@@ -361,6 +387,7 @@ class _LocationEditorDialogState extends State<_LocationEditorDialog> {
                       _latitudeController.text = position.latitude.toString();
                       _longitudeController.text = position.longitude.toString();
                     } on LocationServiceException catch (e) {
+                      // bắt lỗi GPS nếu ko mở
                       if (!mounted) return;
                       messenger.showSnackBar(
                         SnackBar(content: Text(e.message)),
@@ -383,7 +410,10 @@ class _LocationEditorDialogState extends State<_LocationEditorDialog> {
         FilledButton(
           onPressed: () async {
             final messenger = ScaffoldMessenger.of(context);
-            final navigator = Navigator.of(context);
+            final navigator = Navigator.of(
+              context,
+            ); // tránh xung đột khi rebuild UI
+            final saveFn = widget.onSave;
             final cityName = _cityController.text.trim();
             final alias = _aliasController.text.trim();
             if (cityName.isEmpty) return;
@@ -411,7 +441,11 @@ class _LocationEditorDialogState extends State<_LocationEditorDialog> {
                 );
               }
 
-              await widget.onSave(
+              // Close dialog first to avoid rebuild/dispose race, then perform save.
+              if (!navigator.mounted) return;
+              navigator.pop();
+
+              await saveFn(
                 LocationModel(
                   name: resolvedName,
                   displayName: alias,
@@ -419,9 +453,6 @@ class _LocationEditorDialogState extends State<_LocationEditorDialog> {
                   longitude: longitude,
                 ),
               );
-
-              if (!mounted) return;
-              navigator.pop();
             } on LocationServiceException catch (e) {
               if (!mounted) return;
               messenger.showSnackBar(SnackBar(content: Text(e.message)));
