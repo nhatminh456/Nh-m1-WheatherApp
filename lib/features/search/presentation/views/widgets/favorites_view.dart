@@ -5,10 +5,6 @@ import 'package:reicon_flutter/reicon_flutter.dart';
 import '../../../../../shared/utilities/forecast_util.dart';
 import '../../viewmodels/search_viewmodel.dart';
 
-const _primary = Color(0xFF00658D);
-const _onSurface = Color(0xFF171C20);
-const _onSurfaceVariant = Color(0xFF3E4850);
-
 class FavoritesView extends StatelessWidget {
   const FavoritesView({
     super.key,
@@ -21,6 +17,11 @@ class FavoritesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = colorScheme.primary;
+    final onSurface = colorScheme.onSurface;
+    final onSurfaceVariant = colorScheme.onSurfaceVariant;
+
     final favorites = viewModel.favoriteCities;
 
     if (favorites.isEmpty) {
@@ -33,24 +34,24 @@ class FavoritesView extends StatelessWidget {
               _ReiconIcon(
                 icon: Reicon.outline.star,
                 size: 48,
-                color: _onSurfaceVariant.withValues(alpha: 0.5),
+                color: onSurfaceVariant.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Chưa có địa điểm yêu thích',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: _onSurfaceVariant,
+                  color: onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Đánh dấu sao các thành phố để theo dõi nhanh thời tiết tại đây.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: _onSurfaceVariant,
+                  color: onSurfaceVariant,
                 ),
               ),
             ],
@@ -62,14 +63,14 @@ class FavoritesView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Text(
             'Đã lưu',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: _onSurface,
+              color: onSurface,
             ),
           ),
         ),
@@ -96,10 +97,10 @@ class FavoritesView extends StatelessWidget {
                           children: [
                             Text(
                               city.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: _onSurface,
+                                color: onSurface,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -109,9 +110,9 @@ class FavoritesView extends StatelessWidget {
                                       ? '${weather.description[0].toUpperCase()}${weather.description.substring(1)}'
                                       : weather.condition)
                                   : 'Đang tải thời tiết...',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
-                                color: _onSurfaceVariant,
+                                color: onSurfaceVariant,
                               ),
                             ),
                             if (weather != null) ...[
@@ -121,28 +122,28 @@ class FavoritesView extends StatelessWidget {
                                   _ReiconIcon(
                                     icon: Reicon.outline.drop,
                                     size: 14,
-                                    color: _onSurfaceVariant,
+                                    color: onSurfaceVariant,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${weather.humidityPercent}%',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: _onSurfaceVariant,
+                                      color: onSurfaceVariant,
                                     ),
                                   ),
                                   const SizedBox(width: 16),
                                   _ReiconIcon(
                                     icon: Reicon.outline.wind,
                                     size: 14,
-                                    color: _onSurfaceVariant,
+                                    color: onSurfaceVariant,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${(weather.windSpeedMeterPerSecond * 3.6).round()} km/h',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: _onSurfaceVariant,
+                                      color: onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -177,10 +178,10 @@ class FavoritesView extends StatelessWidget {
                           if (weather != null)
                             Text(
                               '${weather.temperatureCelsius.round()}°',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w300,
-                                color: _primary,
+                                color: primary,
                               ),
                             ),
                         ],
@@ -204,11 +205,12 @@ class _GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.45),
+        color: colorScheme.surface.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
+        border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),

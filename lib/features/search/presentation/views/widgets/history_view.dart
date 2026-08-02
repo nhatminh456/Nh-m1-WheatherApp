@@ -5,10 +5,6 @@ import 'package:reicon_flutter/reicon_flutter.dart';
 
 import '../../viewmodels/search_viewmodel.dart';
 
-const _onSurface = Color(0xFF171C20);
-const _onSurfaceVariant = Color(0xFF3E4850);
-const _surfaceVariant = Color(0xFFDEE3E8);
-
 class HistoryView extends StatelessWidget {
   const HistoryView({
     super.key,
@@ -21,6 +17,12 @@ class HistoryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final onSurface = colorScheme.onSurface;
+    final onSurfaceVariant = colorScheme.onSurfaceVariant;
+    final surfaceVariant = colorScheme.surfaceContainerHighest;
+    final error = colorScheme.error;
+    
     final history = viewModel.history;
 
     if (history.isEmpty) {
@@ -33,24 +35,24 @@ class HistoryView extends StatelessWidget {
               _ReiconIcon(
                 icon: Reicon.outline.history,
                 size: 48,
-                color: _onSurfaceVariant.withValues(alpha: 0.5),
+                color: onSurfaceVariant.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Chưa có lịch sử tìm kiếm',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: _onSurfaceVariant,
+                  color: onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Tìm kiếm các thành phố để xem thông tin thời tiết.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: _onSurfaceVariant,
+                  color: onSurfaceVariant,
                 ),
               ),
             ],
@@ -67,12 +69,12 @@ class HistoryView extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Gần đây',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: _onSurface,
+                  color: onSurface,
                 ),
               ),
               TextButton.icon(
@@ -80,11 +82,11 @@ class HistoryView extends StatelessWidget {
                 icon: _ReiconIcon(
                   icon: Reicon.outline.trash,
                   size: 16,
-                  color: Colors.red,
+                  color: error,
                 ),
-                label: const Text(
+                label: Text(
                   'Xóa hết',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: error),
                 ),
               ),
             ],
@@ -105,38 +107,38 @@ class HistoryView extends StatelessWidget {
                 leading: Container(
                   width: 40,
                   height: 40,
-                  decoration: const BoxDecoration(
-                    color: _surfaceVariant,
+                  decoration: BoxDecoration(
+                    color: surfaceVariant,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: _ReiconIcon(
                       icon: Reicon.outline.history,
                       size: 20,
-                      color: _onSurfaceVariant,
+                      color: onSurfaceVariant,
                     ),
                   ),
                 ),
                 title: Text(
                   item.query,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: _onSurface,
+                    color: onSurface,
                   ),
                 ),
                 subtitle: Text(
                   timeStr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: _onSurfaceVariant,
+                    color: onSurfaceVariant,
                   ),
                 ),
                 trailing: IconButton(
                   icon: _ReiconIcon(
                     icon: Reicon.outline.trash,
                     size: 20,
-                    color: _onSurfaceVariant,
+                    color: onSurfaceVariant,
                   ),
                   onPressed: () {
                     if (item.id != null) {
@@ -179,11 +181,11 @@ class HistoryView extends StatelessWidget {
           content: const Text('Bạn có chắc chắn muốn xóa toàn bộ lịch sử tìm kiếm không?'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Hủy', style: TextStyle(color: _onSurfaceVariant)),
+              child: Text('Hủy', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+              child: Text('Xóa', style: TextStyle(color: Theme.of(context).colorScheme.error)),
               onPressed: () {
                 viewModel.clearAllHistory();
                 Navigator.of(context).pop();
@@ -203,11 +205,12 @@ class _GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.45),
+        color: colorScheme.surface.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
+        border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),

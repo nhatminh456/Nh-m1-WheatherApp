@@ -7,13 +7,6 @@ import '../viewmodels/search_viewmodel.dart';
 import 'widgets/favorites_view.dart';
 import 'widgets/history_view.dart';
 
-const _primary = Color(0xFF00658D);
-const _primaryFixed = Color(0xFFC6E7FF);
-const _surface = Color(0xFFF5FAFF);
-const _onSurface = Color(0xFF171C20);
-const _onSurfaceVariant = Color(0xFF3E4850);
-const _surfaceVariant = Color(0xFFDEE3E8);
-
 class SearchView extends StatefulWidget {
   const SearchView({super.key, required this.viewModel});
 
@@ -62,10 +55,11 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
         '/weather?lat=$lat&lon=$lon&name=${Uri.encodeComponent(name)}',
       );
     } else if (widget.viewModel.errorMessage != null && mounted) {
+      final errorColor = Theme.of(context).colorScheme.error;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(widget.viewModel.errorMessage!),
-          backgroundColor: Colors.red,
+          backgroundColor: errorColor,
         ),
       );
     }
@@ -73,13 +67,22 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primary = colorScheme.primary;
+    final primaryFixed = colorScheme.primaryContainer;
+    final surface = colorScheme.surface;
+    final onSurface = colorScheme.onSurface;
+    final onSurfaceVariant = colorScheme.onSurfaceVariant;
+    final surfaceVariant = colorScheme.surfaceContainerHighest;
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [_primaryFixed, _surface],
-          stops: [0, 0.6],
+          colors: [primaryFixed, surface],
+          stops: const [0, 0.6],
         ),
       ),
       child: Scaffold(
@@ -91,16 +94,16 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
           leading: IconButton(
             icon: _ReiconIcon(
               icon: Reicon.outline.arrowLeft,
-              color: _onSurface,
+              color: onSurface,
             ),
             onPressed: () => context.go('/'),
           ),
-          title: const Text(
+          title: Text(
             'Tìm kiếm địa điểm',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: _primary,
+              color: primary,
             ),
           ),
         ),
@@ -117,33 +120,33 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: TextField(
                         controller: _searchController,
-                        style: const TextStyle(color: _onSurface),
+                        style: TextStyle(color: onSurface),
                         decoration: InputDecoration(
                           hintText: 'Nhập tên thành phố (ví dụ: Hà Nội)...',
                           hintStyle: TextStyle(
-                            color: _onSurfaceVariant.withValues(alpha: 0.6),
+                            color: onSurfaceVariant.withValues(alpha: 0.6),
                           ),
                           border: InputBorder.none,
                           icon: _ReiconIcon(
                             icon: Reicon.outline.search,
-                            color: _onSurfaceVariant,
+                            color: onSurfaceVariant,
                           ),
                           suffixIcon: widget.viewModel.status == SearchStatus.loading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: Padding(
-                                    padding: EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(12),
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: _primary,
+                                      color: primary,
                                     ),
                                   ),
                                 )
                               : IconButton(
                                   icon: _ReiconIcon(
                                     icon: Reicon.outline.arrowRight,
-                                    color: _primary,
+                                    color: primary,
                                   ),
                                   onPressed: () => _onSearchSubmit(_searchController.text),
                                 ),
@@ -159,13 +162,13 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: _surfaceVariant.withValues(alpha: 0.5),
+                        color: surfaceVariant.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TabBar(
                         controller: _tabController,
                         indicator: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
@@ -175,8 +178,8 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
                             ),
                           ],
                         ),
-                        labelColor: _primary,
-                        unselectedLabelColor: _onSurfaceVariant,
+                        labelColor: primary,
+                        unselectedLabelColor: onSurfaceVariant,
                         labelStyle: const TextStyle(fontWeight: FontWeight.bold),
                         tabs: const [
                           Tab(text: 'Lịch sử tìm kiếm'),
@@ -243,12 +246,13 @@ class _GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.45),
+        color: colorScheme.surface.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
+        border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
