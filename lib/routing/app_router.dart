@@ -33,7 +33,10 @@ void setupRouter(SettingsViewModel settingsViewModel) {
           LocationService(),
           _buildWeatherRepository(),
         );
-        return HomeView(viewModel: HomeViewModel(AuthRepository(), useCase));
+        return HomeView(
+          viewModel: HomeViewModel(AuthRepository(), useCase),
+          settingsViewModel: settingsViewModel,
+        );
       },
     ),
     GoRoute(
@@ -48,7 +51,10 @@ void setupRouter(SettingsViewModel settingsViewModel) {
           LocationService(),
           _buildWeatherRepository(),
         );
-        return WeatherView(viewModel: WeatherViewModel(useCase));
+        return WeatherView(
+          viewModel: WeatherViewModel(useCase),
+          settingsViewModel: settingsViewModel,
+        );
       },
     ),
     GoRoute(
@@ -56,6 +62,7 @@ void setupRouter(SettingsViewModel settingsViewModel) {
       builder: (context, state) {
         return AlertsView(
           viewModel: AlertsViewModel(WeatherAlertsRepository()),
+          settingsViewModel: settingsViewModel,
         );
       },
     ),

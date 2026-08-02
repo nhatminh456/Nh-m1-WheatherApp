@@ -5,8 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:reicon_flutter/reicon_flutter.dart';
 
 import '../../../../shared/utilities/forecast_util.dart';
+import '../../../../shared/models/user_settings.dart';
 import '../../../weather/data/models/forecast.dart';
 import '../../../weather/data/models/weather.dart';
+import '../../../settings/presentation/viewmodels/settings_viewmodel.dart';
 import '../viewmodels/home_viewmodel.dart';
 
 // Palette from the "Atmosphere" design (test.html).
@@ -18,9 +20,14 @@ const _onSurfaceVariant = Color(0xFF3E4850);
 const _surfaceVariant = Color(0xFFDEE3E8);
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key, required this.viewModel});
+  const HomeView({
+    super.key,
+    required this.viewModel,
+    required this.settingsViewModel,
+  });
 
   final HomeViewModel viewModel;
+  final SettingsViewModel settingsViewModel;
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -108,7 +115,12 @@ class _HomeViewState extends State<HomeView> {
               onRefresh: () => widget.viewModel.load(forceRefresh: true),
               child: ListenableBuilder(
                 listenable: widget.viewModel,
-                builder: (context, _) => _buildBody(),
+                builder: (context, _) => ListenableBuilder(
+                  listenable: widget.settingsViewModel,
+                  builder: (context, _) => _buildBody(
+                    widget.settingsViewModel.settings.temperatureUnit,
+                  ),
+                ),
               ),
             ),
           ),
@@ -118,7 +130,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(TemperatureUnit temperatureUnit) {
     switch (widget.viewModel.status) {
       case HomeLoadStatus.initial:
       case HomeLoadStatus.loading:
@@ -158,13 +170,13 @@ class _HomeViewState extends State<HomeView> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            _HeroSection(weather: weather),
+            _HeroSection(weather: weather, temperatureUnit: temperatureUnit),
             const SizedBox(height: 32),
-            _BentoGrid(weather: weather),
+            _BentoGrid(weather: weather, temperatureUnit: temperatureUnit),
             const SizedBox(height: 32),
-            _HourlyForecastCard(hourly: widget.viewModel.hourly),
+            _HourlyForecastCard(hourly: widget.viewModel.hourly, temperatureUnit: temperatureUnit),
             const SizedBox(height: 32),
-            _DailyForecastCard(daily: widget.viewModel.daily),
+            _DailyForecastCard(daily: widget.viewModel.daily, temperatureUnit: temperatureUnit),
           ],
         );
     }
@@ -172,9 +184,10 @@ class _HomeViewState extends State<HomeView> {
 }
 
 class _HeroSection extends StatelessWidget {
-  const _HeroSection({required this.weather});
+  const _HeroSection({required this.weather, required this.temperatureUnit});
 
   final Weather weather;
+  final TemperatureUnit temperatureUnit;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +230,7 @@ class _HeroSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          '${weather.temperatureCelsius.round()}°',
+          '${temperatureUnit.fromCelsius(weather.temperatureCelsius).round()}${temperatureUnit.symbol}',
           style: const TextStyle(
             fontSize: 64,
             fontWeight: FontWeight.w300,
@@ -227,8 +240,8 @@ class _HeroSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'C ${weather.temperatureMaxCelsius.round()}°   '
-          'T ${weather.temperatureMinCelsius.round()}°',
+          '${temperatureUnit.fromCelsius(weather.temperatureMaxCelsius).round()}${temperatureUnit.symbol}   '
+          '${temperatureUnit.fromCelsius(weather.temperatureMinCelsius).round()}${temperatureUnit.symbol}',
           style: const TextStyle(fontSize: 16, color: _onSurfaceVariant),
         ),
       ],
@@ -237,9 +250,10 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _BentoGrid extends StatelessWidget {
-  const _BentoGrid({required this.weather});
+  const _BentoGrid({required this.weather, required this.temperatureUnit});
 
   final Weather weather;
+  final TemperatureUnit temperatureUnit;
 
   static const _compassLabels = [
     'Bắc',
@@ -290,10 +304,11 @@ class _BentoGrid extends StatelessWidget {
         _BentoCard(
           icon: Reicon.outline.thermometer,
           label: 'CẢM GIÁC NHƯ',
-          value: '${weather.feelsLikeCelsius.round()}°',
+          value:
+              '${temperatureUnit.fromCelsius(weather.feelsLikeCelsius).round()}${temperatureUnit.symbol}',
           sublabel:
-              weather.feelsLikeCelsius.round() >
-                  weather.temperatureCelsius.round()
+              temperatureUnit.fromCelsius(weather.feelsLikeCelsius) >
+                  temperatureUnit.fromCelsius(weather.temperatureCelsius)
               ? 'Nóng hơn nhiệt độ thực tế'
               : 'Gần với nhiệt độ thực tế',
         ),
@@ -358,9 +373,10 @@ class _BentoCard extends StatelessWidget {
 }
 
 class _HourlyForecastCard extends StatelessWidget {
-  const _HourlyForecastCard({required this.hourly});
+  const _HourlyForecastCard({required this.hourly, required this.temperatureUnit});
 
   final List<HourlyForecast> hourly;
+  final TemperatureUnit temperatureUnit;
 
   @override
   Widget build(BuildContext context) {
@@ -395,6 +411,7 @@ class _HourlyForecastCard extends StatelessWidget {
                           ? 'Bây giờ'
                           : DateFormat.Hm().format(hourly[i].time),
                       forecast: hourly[i],
+                        temperatureUnit: temperatureUnit,
                     ),
                   ),
                 ],
@@ -408,10 +425,15 @@ class _HourlyForecastCard extends StatelessWidget {
 }
 
 class _HourlyItem extends StatelessWidget {
-  const _HourlyItem({required this.label, required this.forecast});
+  const _HourlyItem({
+    required this.label,
+    required this.forecast,
+    required this.temperatureUnit,
+  });
 
   final String label;
   final HourlyForecast forecast;
+  final TemperatureUnit temperatureUnit;
 
   @override
   Widget build(BuildContext context) {
@@ -429,7 +451,7 @@ class _HourlyItem extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '${forecast.temperatureCelsius.round()}°',
+          '${temperatureUnit.fromCelsius(forecast.temperatureCelsius).round()}${temperatureUnit.symbol}',
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
@@ -442,9 +464,10 @@ class _HourlyItem extends StatelessWidget {
 }
 
 class _DailyForecastCard extends StatelessWidget {
-  const _DailyForecastCard({required this.daily});
+  const _DailyForecastCard({required this.daily, required this.temperatureUnit});
 
   final List<DailyForecast> daily;
+  final TemperatureUnit temperatureUnit;
 
   @override
   Widget build(BuildContext context) {
@@ -476,6 +499,7 @@ class _DailyForecastCard extends StatelessWidget {
               isLast: i == daily.length - 1,
               globalMin: globalMin,
               globalMax: globalMax,
+              temperatureUnit: temperatureUnit,
             ),
         ],
       ),
@@ -490,6 +514,7 @@ class _DailyRow extends StatelessWidget {
     required this.isLast,
     required this.globalMin,
     required this.globalMax,
+    required this.temperatureUnit,
   });
 
   final DailyForecast forecast;
@@ -497,6 +522,7 @@ class _DailyRow extends StatelessWidget {
   final bool isLast;
   final double globalMin;
   final double globalMax;
+  final TemperatureUnit temperatureUnit;
 
   @override
   Widget build(BuildContext context) {
@@ -553,7 +579,7 @@ class _DailyRow extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            '${forecast.minCelsius.round()}°',
+            '${temperatureUnit.fromCelsius(forecast.minCelsius).round()}${temperatureUnit.symbol}',
             style: const TextStyle(fontSize: 15, color: _onSurfaceVariant),
           ),
           const SizedBox(width: 12),
@@ -585,7 +611,7 @@ class _DailyRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            '${forecast.maxCelsius.round()}°',
+            '${temperatureUnit.fromCelsius(forecast.maxCelsius).round()}${temperatureUnit.symbol}',
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,

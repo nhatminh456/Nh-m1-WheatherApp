@@ -2,6 +2,23 @@ enum TemperatureUnit { celsius, fahrenheit }
 
 enum AppTheme { system, light, dark }
 
+extension TemperatureUnitX on TemperatureUnit {
+  String get symbol => switch (this) {
+    TemperatureUnit.celsius => '°C',
+    TemperatureUnit.fahrenheit => '°F',
+  };
+
+  double fromCelsius(double value) => switch (this) {
+    TemperatureUnit.celsius => value,
+    TemperatureUnit.fahrenheit => (value * 9 / 5) + 32,
+  };
+
+  double toCelsius(double value) => switch (this) {
+    TemperatureUnit.celsius => value,
+    TemperatureUnit.fahrenheit => (value - 32) * 5 / 9,
+  };
+}
+
 class UserSettings {
   const UserSettings({
     this.temperatureUnit = TemperatureUnit.celsius,

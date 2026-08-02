@@ -4,19 +4,20 @@ import 'package:go_router/go_router.dart';
 import 'package:reicon_flutter/reicon_flutter.dart';
 
 import '../../../../shared/widgets/atmosphere_bottom_navigation_bar.dart';
+import '../../../../shared/models/user_settings.dart';
+import '../../../settings/presentation/viewmodels/settings_viewmodel.dart';
 import '../../data/models/weather_alert.dart';
 import '../viewmodels/alerts_viewmodel.dart';
 
-const _primary = Color(0xFF00658D);
-const _primaryFixed = Color(0xFFC6E7FF);
-const _surface = Color(0xFFF5FAFF);
-const _onSurface = Color(0xFF171C20);
-const _onSurfaceVariant = Color(0xFF3E4850);
-
 class AlertsView extends StatefulWidget {
-  const AlertsView({super.key, required this.viewModel});
+  const AlertsView({
+    super.key,
+    required this.viewModel,
+    required this.settingsViewModel,
+  });
 
   final AlertsViewModel viewModel;
+  final SettingsViewModel settingsViewModel;
 
   @override
   State<AlertsView> createState() => _AlertsViewState();
@@ -37,85 +38,100 @@ class _AlertsViewState extends State<AlertsView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [_primaryFixed, _surface],
-          stops: [0, 0.62],
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          centerTitle: true,
-          leading: IconButton(
-            icon: _ReiconIcon(
-              icon: Reicon.outline.menu,
-              color: _onSurfaceVariant,
-            ),
-            onPressed: () {},
-          ),
-          title: const Text(
-            'Atmosphere',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: _primary,
-              letterSpacing: -0.5,
+    return ListenableBuilder(
+      listenable: widget.settingsViewModel,
+      builder: (context, _) {
+        final temperatureUnit = widget.settingsViewModel.settings.temperatureUnit;
+
+        final colorScheme = Theme.of(context).colorScheme;
+        final isDark = colorScheme.brightness == Brightness.dark;
+
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                colorScheme.primaryContainer.withValues(alpha: isDark ? 0.26 : 0.7),
+                colorScheme.surface,
+              ],
+              stops: const [0, 0.62],
             ),
           ),
-          actions: [
-            IconButton(
-              icon: _ReiconIcon(
-                icon: Reicon.outline.search,
-                color: _onSurfaceVariant,
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              centerTitle: true,
+              leading: IconButton(
+                icon: _ReiconIcon(
+                  icon: Reicon.outline.menu,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                onPressed: () {},
               ),
-              tooltip: 'Chi tiết thời tiết',
-              onPressed: () => context.go('/weather'),
+              title: Text(
+                'Atmosphere',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.primary,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: _ReiconIcon(
+                    icon: Reicon.outline.search,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  tooltip: 'Chi tiết thời tiết',
+                  onPressed: () => context.go('/weather'),
+                ),
+              ],
             ),
-          ],
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 672),
-            child: RefreshIndicator(
-              onRefresh: () => widget.viewModel.load(forceRefresh: true),
-              child: ListenableBuilder(
-                listenable: widget.viewModel,
-                builder: (context, _) => _buildBody(context),
+            body: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 672),
+                child: RefreshIndicator(
+                  onRefresh: () => widget.viewModel.load(forceRefresh: true),
+                  child: ListenableBuilder(
+                    listenable: widget.viewModel,
+                    builder: (context, _) => _buildBody(context, temperatureUnit),
+                  ),
+                ),
               ),
             ),
+            bottomNavigationBar: AtmosphereBottomNavigationBar(
+              selectedIndex: 2,
+              onDestinationSelected: (index) {
+                if (index == 0) context.go('/');
+                else if (index == 2) context.go('/alerts');
+                else if (index == 4) context.go('/settings');
+              },
+            ),
+            floatingActionButton: FloatingActionButton.extended(
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              onPressed: () => _openEditor(context, temperatureUnit: temperatureUnit),
+              icon: const Icon(Icons.add),
+              label: const Text('Tạo mới'),
+            ),
           ),
-        ),
-        bottomNavigationBar: AtmosphereBottomNavigationBar(
-          selectedIndex: 2,
-          onDestinationSelected: (index) {
-            if (index == 0) context.go('/');
-            else if (index == 2) context.go('/alerts');
-            else if (index == 4) context.go('/settings');
-          },
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: _primary,
-          foregroundColor: Colors.white,
-          onPressed: () => _openEditor(context),
-          icon: const Icon(Icons.add),
-          label: const Text('Tạo mới'),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context, TemperatureUnit temperatureUnit) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     switch (widget.viewModel.status) {
       case AlertsLoadStatus.initial:
       case AlertsLoadStatus.loading:
-        return const Center(child: CircularProgressIndicator(color: _primary));
+        return Center(child: CircularProgressIndicator(color: colorScheme.primary));
       case AlertsLoadStatus.error:
         return ListView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -126,19 +142,19 @@ class _AlertsViewState extends State<AlertsView> {
               child: _ReiconIcon(
                 icon: Reicon.outline.cloudCross,
                 size: 48,
-                color: _onSurfaceVariant,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               widget.viewModel.errorMessage ?? 'Đã có lỗi xảy ra',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: _onSurfaceVariant),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
             Center(
               child: FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: _primary),
+                style: FilledButton.styleFrom(backgroundColor: colorScheme.primary),
                 onPressed: () => widget.viewModel.load(forceRefresh: true),
                 child: const Text('Thử lại'),
               ),
@@ -155,8 +171,8 @@ class _AlertsViewState extends State<AlertsView> {
               const _EmptyAlertsState(),
               const SizedBox(height: 24),
               FilledButton.icon(
-                style: FilledButton.styleFrom(backgroundColor: _primary),
-                onPressed: () => _openEditor(context),
+                style: FilledButton.styleFrom(backgroundColor: colorScheme.primary),
+                onPressed: () => _openEditor(context, temperatureUnit: temperatureUnit),
                 icon: const Icon(Icons.add),
                 label: const Text('Tạo cảnh báo đầu tiên'),
               ),
@@ -168,31 +184,31 @@ class _AlertsViewState extends State<AlertsView> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
           children: [
-            const Text(
+            Text(
               'Cảnh báo thời tiết',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: _onSurface,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Quản lý các thông báo quan trọng.',
-              style: TextStyle(fontSize: 16, color: _onSurfaceVariant),
+              style: TextStyle(fontSize: 16, color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: _primary,
+                  backgroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
                     vertical: 14,
                   ),
                 ),
-                onPressed: () => _openEditor(context),
+                onPressed: () => _openEditor(context, temperatureUnit: temperatureUnit),
                 icon: const Icon(Icons.add),
                 label: const Text('Tạo mới'),
               ),
@@ -201,8 +217,9 @@ class _AlertsViewState extends State<AlertsView> {
             for (final alert in widget.viewModel.alerts) ...[
               _AlertCard(
                 alert: alert,
+                temperatureUnit: temperatureUnit,
                 onToggle: (enabled) => widget.viewModel.setEnabled(alert, enabled),
-                onEdit: () => _openEditor(context, alert: alert),
+                onEdit: () => _openEditor(context, alert: alert, temperatureUnit: temperatureUnit),
                 onDelete: () => _confirmDelete(context, alert),
                 onThresholdChanged: (threshold) => widget.viewModel.saveAlert(
                   alert.copyWith(threshold: threshold),
@@ -216,6 +233,8 @@ class _AlertsViewState extends State<AlertsView> {
   }
 
   Future<void> _confirmDelete(BuildContext context, WeatherAlert alert) async {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -227,7 +246,7 @@ class _AlertsViewState extends State<AlertsView> {
             child: const Text('Huỷ'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: colorScheme.error),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Xoá'),
           ),
@@ -243,13 +262,17 @@ class _AlertsViewState extends State<AlertsView> {
   Future<void> _openEditor(
     BuildContext context, {
     WeatherAlert? alert,
+    required TemperatureUnit temperatureUnit,
   }) async {
     final result = await showModalBottomSheet<WeatherAlert>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _AlertEditorSheet(alert: alert),
+      builder: (context) => _AlertEditorSheet(
+        alert: alert,
+        temperatureUnit: temperatureUnit,
+      ),
     );
 
     if (result == null) return;
@@ -265,6 +288,7 @@ class _AlertsViewState extends State<AlertsView> {
 class _AlertCard extends StatefulWidget {
   const _AlertCard({
     required this.alert,
+    required this.temperatureUnit,
     required this.onToggle,
     required this.onEdit,
     required this.onDelete,
@@ -272,6 +296,7 @@ class _AlertCard extends StatefulWidget {
   });
 
   final WeatherAlert alert;
+  final TemperatureUnit temperatureUnit;
   final ValueChanged<bool> onToggle;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -287,27 +312,43 @@ class _AlertCardState extends State<_AlertCard> {
   @override
   void initState() {
     super.initState();
-    _thresholdValue = widget.alert.threshold;
+    _thresholdValue = _displayThreshold(
+      widget.alert.metric,
+      widget.alert.threshold,
+      widget.temperatureUnit,
+    );
   }
 
   @override
   void didUpdateWidget(covariant _AlertCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.alert.threshold != widget.alert.threshold) {
-      _thresholdValue = widget.alert.threshold;
+    if (oldWidget.alert.threshold != widget.alert.threshold ||
+        oldWidget.temperatureUnit != widget.temperatureUnit) {
+      _thresholdValue = _displayThreshold(
+        widget.alert.metric,
+        widget.alert.threshold,
+        widget.temperatureUnit,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final metric = widget.alert.metric;
     final accent = _accentFor(metric);
     final bg = accent.withValues(alpha: widget.alert.enabled ? 0.14 : 0.07);
-    final enabledColor = widget.alert.enabled ? accent : Colors.grey;
+    final enabledColor = widget.alert.enabled ? accent : colorScheme.outline;
+    final displayThreshold = _displayThreshold(metric, widget.alert.threshold, widget.temperatureUnit);
+    final displayMin = _displayThreshold(metric, metric.minThreshold, widget.temperatureUnit);
+    final displayMax = _displayThreshold(metric, metric.maxThreshold, widget.temperatureUnit);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.78),
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: widget.alert.enabled ? 0.72 : 0.58,
+        ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
@@ -357,18 +398,18 @@ class _AlertCardState extends State<_AlertCard> {
                         children: [
                           Text(
                             widget.alert.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: _onSurface,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             widget.alert.city,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: _onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -384,22 +425,22 @@ class _AlertCardState extends State<_AlertCard> {
                 const SizedBox(height: 16),
                 Text(
                   metric.description,
-                  style: const TextStyle(fontSize: 14, color: _onSurfaceVariant),
+                  style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 14),
                 Row(
                   children: [
                     Text(
                       metric.thresholdLabel,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: _onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const Spacer(),
                     Text(
-                      widget.alert.thresholdText,
+                      _thresholdText(metric, displayThreshold, widget.temperatureUnit),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -417,36 +458,35 @@ class _AlertCardState extends State<_AlertCard> {
                     trackHeight: 4,
                   ),
                   child: Slider(
-                    value: _thresholdValue.clamp(
-                      metric.minThreshold,
-                      metric.maxThreshold,
-                    ),
-                    min: metric.minThreshold,
-                    max: metric.maxThreshold,
+                    value: _thresholdValue.clamp(displayMin, displayMax),
+                    min: displayMin,
+                    max: displayMax,
                     divisions:
-                        ((metric.maxThreshold - metric.minThreshold) / metric.step)
+                        ((displayMax - displayMin) / _displayStep(metric, widget.temperatureUnit))
                             .round(),
-                    label: widget.alert.thresholdText,
+                    label: _thresholdText(metric, _thresholdValue, widget.temperatureUnit),
                     onChanged: widget.alert.enabled
                         ? (value) {
                             setState(() => _thresholdValue = value);
                           }
                         : null,
                     onChangeEnd: widget.alert.enabled
-                        ? (value) => widget.onThresholdChanged(value)
+                        ? (value) => widget.onThresholdChanged(
+                              _storedThreshold(metric, value, widget.temperatureUnit),
+                            )
                         : null,
                   ),
                 ),
                 Row(
                   children: [
                     Text(
-                      '${metric.minThreshold.toStringAsFixed(metric.step < 1 ? 1 : 0)} ${metric.unit}',
-                      style: const TextStyle(fontSize: 12, color: _onSurfaceVariant),
+                      _thresholdLabel(metric, displayMin, widget.temperatureUnit),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                     const Spacer(),
                     Text(
-                      '${metric.maxThreshold.toStringAsFixed(metric.step < 1 ? 1 : 0)} ${metric.unit}',
-                      style: const TextStyle(fontSize: 12, color: _onSurfaceVariant),
+                      _thresholdLabel(metric, displayMax, widget.temperatureUnit),
+                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -460,7 +500,7 @@ class _AlertCardState extends State<_AlertCard> {
                     ),
                     TextButton.icon(
                       onPressed: widget.onDelete,
-                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      style: TextButton.styleFrom(foregroundColor: colorScheme.error),
                       icon: const Icon(Icons.delete_outline),
                       label: const Text('Xoá'),
                     ),
@@ -511,9 +551,10 @@ class _AlertCardState extends State<_AlertCard> {
 }
 
 class _AlertEditorSheet extends StatefulWidget {
-  const _AlertEditorSheet({this.alert});
+  const _AlertEditorSheet({this.alert, required this.temperatureUnit});
 
   final WeatherAlert? alert;
+  final TemperatureUnit temperatureUnit;
 
   @override
   State<_AlertEditorSheet> createState() => _AlertEditorSheetState();
@@ -534,7 +575,8 @@ class _AlertEditorSheetState extends State<_AlertEditorSheet> {
     _titleController = TextEditingController(text: widget.alert?.title ?? '');
     _cityController = TextEditingController(text: widget.alert?.city ?? '');
     _metric = widget.alert?.metric ?? WeatherAlertMetric.rain;
-    _threshold = widget.alert?.threshold ?? _metric.maxThreshold / 10;
+    final storedThreshold = widget.alert?.threshold ?? _metric.maxThreshold / 10;
+    _threshold = _displayThreshold(_metric, storedThreshold, widget.temperatureUnit);
     _enabled = widget.alert?.enabled ?? true;
   }
 
@@ -547,14 +589,19 @@ class _AlertEditorSheetState extends State<_AlertEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final metric = _metric;
+    final displayThreshold = _displayThreshold(metric, _threshold, widget.temperatureUnit);
+    final displayMin = _displayThreshold(metric, metric.minThreshold, widget.temperatureUnit);
+    final displayMax = _displayThreshold(metric, metric.maxThreshold, widget.temperatureUnit);
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         child: Material(
-          color: Colors.white,
+          color: colorScheme.surface,
           child: SafeArea(
             top: false,
             child: SingleChildScrollView(
@@ -570,7 +617,7 @@ class _AlertEditorSheetState extends State<_AlertEditorSheet> {
                         width: 48,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.black12,
+                          color: colorScheme.outlineVariant,
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
@@ -578,16 +625,16 @@ class _AlertEditorSheetState extends State<_AlertEditorSheet> {
                     const SizedBox(height: 20),
                     Text(
                       widget.alert == null ? 'Tạo cảnh báo' : 'Sửa cảnh báo',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: _onSurface,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                       'Thiết lập loại cảnh báo, địa điểm và ngưỡng kích hoạt.',
-                      style: TextStyle(fontSize: 14, color: _onSurfaceVariant),
+                      style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
@@ -645,11 +692,11 @@ class _AlertEditorSheetState extends State<_AlertEditorSheet> {
                       children: [
                         Expanded(
                           child: Text(
-                            '${_metric.thresholdLabel}: ${_threshold.toStringAsFixed(_metric.step < 1 ? 1 : 0)} ${_metric.unit}',
-                            style: const TextStyle(
+                            '${metric.thresholdLabel}: ${_thresholdText(metric, displayThreshold, widget.temperatureUnit)}',
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: _onSurface,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -660,29 +707,25 @@ class _AlertEditorSheetState extends State<_AlertEditorSheet> {
                       ],
                     ),
                     Slider(
-                      value: _threshold.clamp(
-                        _metric.minThreshold,
-                        _metric.maxThreshold,
-                      ),
-                      min: _metric.minThreshold,
-                      max: _metric.maxThreshold,
+                      value: _threshold.clamp(displayMin, displayMax),
+                      min: displayMin,
+                      max: displayMax,
                       divisions:
-                          ((_metric.maxThreshold - _metric.minThreshold) / _metric.step)
+                          ((displayMax - displayMin) / _displayStep(metric, widget.temperatureUnit))
                               .round(),
-                      label:
-                          '${_threshold.toStringAsFixed(_metric.step < 1 ? 1 : 0)} ${_metric.unit}',
+                      label: _thresholdText(metric, _threshold, widget.temperatureUnit),
                       onChanged: (value) => setState(() => _threshold = value),
                     ),
                     Row(
                       children: [
                         Text(
-                          '${_metric.minThreshold.toStringAsFixed(_metric.step < 1 ? 1 : 0)} ${_metric.unit}',
-                          style: const TextStyle(fontSize: 12, color: _onSurfaceVariant),
+                          _thresholdLabel(metric, displayMin, widget.temperatureUnit),
+                          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                         ),
                         const Spacer(),
                         Text(
-                          '${_metric.maxThreshold.toStringAsFixed(_metric.step < 1 ? 1 : 0)} ${_metric.unit}',
-                          style: const TextStyle(fontSize: 12, color: _onSurfaceVariant),
+                          _thresholdLabel(metric, displayMax, widget.temperatureUnit),
+                          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -698,7 +741,7 @@ class _AlertEditorSheetState extends State<_AlertEditorSheet> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: FilledButton(
-                            style: FilledButton.styleFrom(backgroundColor: _primary),
+                            style: FilledButton.styleFrom(backgroundColor: colorScheme.primary),
                             onPressed: _submit,
                             child: const Text('Lưu'),
                           ),
@@ -723,7 +766,7 @@ class _AlertEditorSheetState extends State<_AlertEditorSheet> {
       title: _titleController.text.trim(),
       city: _cityController.text.trim(),
       metric: _metric,
-      threshold: _threshold,
+      threshold: _storedThreshold(_metric, _threshold, widget.temperatureUnit),
       enabled: _enabled,
     );
     Navigator.of(context).pop(alert);
@@ -735,35 +778,100 @@ class _EmptyAlertsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.76),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(28),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.notifications_none_outlined, size: 56, color: _primary),
-          SizedBox(height: 16),
+          Icon(
+            Icons.notifications_none_outlined,
+            size: 56,
+            color: colorScheme.primary,
+          ),
+          const SizedBox(height: 16),
           Text(
             'Chưa có cảnh báo nào',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: _onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Tạo các quy tắc như mưa lớn, rét đậm hoặc UV cao để nhận cảnh báo kịp thời.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: _onSurfaceVariant),
+            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
+}
+
+double _displayThreshold(
+  WeatherAlertMetric metric,
+  double threshold,
+  TemperatureUnit temperatureUnit,
+) {
+  if (metric != WeatherAlertMetric.lowTemperature) {
+    return threshold;
+  }
+
+  return temperatureUnit.fromCelsius(threshold);
+}
+
+double _storedThreshold(
+  WeatherAlertMetric metric,
+  double threshold,
+  TemperatureUnit temperatureUnit,
+) {
+  if (metric != WeatherAlertMetric.lowTemperature) {
+    return threshold;
+  }
+
+  return temperatureUnit.toCelsius(threshold);
+}
+
+double _displayStep(
+  WeatherAlertMetric metric,
+  TemperatureUnit temperatureUnit,
+) {
+  if (metric != WeatherAlertMetric.lowTemperature) {
+    return metric.step;
+  }
+
+  return temperatureUnit == TemperatureUnit.celsius ? metric.step : metric.step * 9 / 5;
+}
+
+String _thresholdLabel(
+  WeatherAlertMetric metric,
+  double value,
+  TemperatureUnit temperatureUnit,
+) {
+  final digits = metric.step < 1 ? 1 : 0;
+  final unit = metric == WeatherAlertMetric.lowTemperature
+      ? temperatureUnit.symbol
+      : metric.unit;
+  return '${value.toStringAsFixed(digits)} $unit';
+}
+
+String _thresholdText(
+  WeatherAlertMetric metric,
+  double value,
+  TemperatureUnit temperatureUnit,
+) {
+  final digits = metric.step < 1 ? 1 : 0;
+  final unit = metric == WeatherAlertMetric.lowTemperature
+      ? temperatureUnit.symbol
+      : metric.unit;
+  return '${value.toStringAsFixed(digits)} $unit';
 }
 
 class _ReiconIcon extends StatelessWidget {
