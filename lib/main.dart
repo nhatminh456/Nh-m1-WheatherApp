@@ -9,12 +9,14 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 import 'routing/app_router.dart';
 import 'shared/services/notification_service.dart';
+import 'shared/services/unit_settings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   await initializeDateFormatting('vi');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await UnitSettings.instance.initialize();
 
   final notificationService = NotificationService();
   await notificationService.initialize();
@@ -37,24 +39,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
-        textTheme: GoogleFonts.montserratTextTheme(),
-      ),
-      routerConfig: appRouter,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('vi'),
-        Locale('en'),
-      ],
-      debugShowCheckedModeBanner: false,
+    return ListenableBuilder(
+      listenable: UnitSettings.instance,
+      builder: (context, _) {
+        return MaterialApp.router(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
+            textTheme: GoogleFonts.montserratTextTheme(),
+          ),
+          routerConfig: appRouter,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('vi'),
+            Locale('en'),
+          ],
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

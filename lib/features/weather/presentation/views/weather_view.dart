@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../search/data/repositories/search_repository.dart';
 import '../../../search/data/services/search_local_service.dart';
 import '../../../../shared/repositories/auth_repository.dart';
+import 'package:weatherapp/shared/services/unit_settings.dart';
 import '../viewmodels/weather_viewmodel.dart';
 
 class WeatherView extends StatefulWidget {
@@ -114,6 +115,20 @@ class _WeatherViewState extends State<WeatherView> {
         ),
         title: Text(widget.cityName ?? 'Weather'),
         actions: [
+          ListenableBuilder(
+            listenable: UnitSettings.instance,
+            builder: (context, _) => TextButton(
+              onPressed: () => UnitSettings.instance.toggleUnit(),
+              child: Text(
+                UnitSettings.instance.isCelsius ? '°C' : '°F',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
           if (widget.viewModel.status == WeatherLoadStatus.success &&
               widget.viewModel.weather != null)
             IconButton(
@@ -168,13 +183,13 @@ class _WeatherViewState extends State<WeatherView> {
                             width: 100,
                             height: 100,
                           ),
-                          Text(
-                            '${weather.temperatureCelsius.toStringAsFixed(1)}°C',
+                           Text(
+                            '${UnitSettings.instance.formatTemperature(weather.temperatureCelsius).toStringAsFixed(1)}°${UnitSettings.instance.isCelsius ? 'C' : 'F'}',
                             style: Theme.of(context).textTheme.displaySmall,
                           ),
                           Text(weather.description),
                           Text(
-                            'Feels like ${weather.feelsLikeCelsius.toStringAsFixed(1)}°C',
+                            'Feels like ${UnitSettings.instance.formatTemperature(weather.feelsLikeCelsius).toStringAsFixed(1)}°${UnitSettings.instance.isCelsius ? 'C' : 'F'}',
                           ),
                         ],
                       ),
@@ -189,8 +204,8 @@ class _WeatherViewState extends State<WeatherView> {
                             _InfoRow(
                               label: 'Min / Max',
                               value:
-                                  '${weather.temperatureMinCelsius.toStringAsFixed(1)}°C / '
-                                  '${weather.temperatureMaxCelsius.toStringAsFixed(1)}°C',
+                                  '${UnitSettings.instance.formatTemperature(weather.temperatureMinCelsius).toStringAsFixed(1)}°${UnitSettings.instance.isCelsius ? 'C' : 'F'} / '
+                                  '${UnitSettings.instance.formatTemperature(weather.temperatureMaxCelsius).toStringAsFixed(1)}°${UnitSettings.instance.isCelsius ? 'C' : 'F'}',
                             ),
                             _InfoRow(
                               label: 'Humidity',

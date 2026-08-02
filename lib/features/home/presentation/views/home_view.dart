@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:reicon_flutter/reicon_flutter.dart';
 
 import '../../../../shared/utilities/forecast_util.dart';
+import 'package:weatherapp/shared/services/unit_settings.dart';
 import '../../../weather/data/models/forecast.dart';
 import '../../../weather/data/models/weather.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -74,6 +75,20 @@ class _HomeViewState extends State<HomeView> {
             ),
           ),
           actions: [
+            ListenableBuilder(
+              listenable: UnitSettings.instance,
+              builder: (context, _) => TextButton(
+                onPressed: () => UnitSettings.instance.toggleUnit(),
+                child: Text(
+                  UnitSettings.instance.isCelsius ? '°C' : '°F',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: _primary,
+                  ),
+                ),
+              ),
+            ),
             ListenableBuilder(
               listenable: widget.viewModel,
               builder: (context, _) => IconButton(
@@ -217,7 +232,7 @@ class _HeroSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          '${weather.temperatureCelsius.round()}°',
+          UnitSettings.instance.format(weather.temperatureCelsius),
           style: const TextStyle(
             fontSize: 64,
             fontWeight: FontWeight.w300,
@@ -227,8 +242,8 @@ class _HeroSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'C ${weather.temperatureMaxCelsius.round()}°   '
-          'T ${weather.temperatureMinCelsius.round()}°',
+          'C ${UnitSettings.instance.format(weather.temperatureMaxCelsius)}   '
+          'T ${UnitSettings.instance.format(weather.temperatureMinCelsius)}',
           style: const TextStyle(fontSize: 16, color: _onSurfaceVariant),
         ),
       ],
@@ -290,7 +305,7 @@ class _BentoGrid extends StatelessWidget {
         _BentoCard(
           icon: Reicon.outline.thermometer,
           label: 'CẢM GIÁC NHƯ',
-          value: '${weather.feelsLikeCelsius.round()}°',
+          value: UnitSettings.instance.format(weather.feelsLikeCelsius),
           sublabel:
               weather.feelsLikeCelsius.round() >
                   weather.temperatureCelsius.round()
@@ -429,7 +444,7 @@ class _HourlyItem extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '${forecast.temperatureCelsius.round()}°',
+          UnitSettings.instance.format(forecast.temperatureCelsius),
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
@@ -553,7 +568,7 @@ class _DailyRow extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            '${forecast.minCelsius.round()}°',
+            UnitSettings.instance.format(forecast.minCelsius),
             style: const TextStyle(fontSize: 15, color: _onSurfaceVariant),
           ),
           const SizedBox(width: 12),
@@ -585,7 +600,7 @@ class _DailyRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            '${forecast.maxCelsius.round()}°',
+            UnitSettings.instance.format(forecast.maxCelsius),
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,

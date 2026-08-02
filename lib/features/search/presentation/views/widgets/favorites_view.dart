@@ -4,6 +4,7 @@ import 'package:reicon_flutter/reicon_flutter.dart';
 import 'package:weatherapp/l10n/generated/app_localizations.dart';
 
 import '../../../../../shared/utilities/forecast_util.dart';
+import 'package:weatherapp/shared/services/unit_settings.dart';
 import '../../viewmodels/search_viewmodel.dart';
 
 class FavoritesView extends StatelessWidget {
@@ -172,14 +173,19 @@ class FavoritesView extends StatelessWidget {
                                   color: Colors.amber,
                                 ),
                                 onPressed: () {
-                                  viewModel.toggleFavorite(city.name, city.latitude, city.longitude);
+                                  viewModel.toggleFavorite(
+                                    city.name,
+                                    city.latitude,
+                                    city.longitude,
+                                    languageCode: Localizations.localeOf(context).languageCode,
+                                  );
                                 },
                               ),
                             ],
                           ),
                           if (weather != null)
                             Text(
-                              '${weather.temperatureCelsius.round()}°',
+                              UnitSettings.instance.format(weather.temperatureCelsius),
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w300,
